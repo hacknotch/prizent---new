@@ -1,0 +1,613 @@
+/* Scoped to superadmin pages only */
+.superadmin-users-page {
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: url(../assets/artistic-blurry-colorful-wallpaper-background.jpeg);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.superadmin-users-page .superadmin-sidebar {
+  position: relative;
+  width: 260px;
+  height: 100vh;
+  background: #1E1E1E;
+  border-radius: 0px 30px 30px 0px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.superadmin-users-page .sidebar-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 0;
+}
+
+.superadmin-users-page .logo-container {
+  position: absolute;
+  left: 22px;
+  top: 44px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.superadmin-users-page .logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.superadmin-users-page .nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  margin-top: 65px;
+  position: relative;
+}
+
+.superadmin-users-page .nav-section {
+  position: relative;
+}
+
+.superadmin-users-page .nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  padding: 5px 27px;
+  font-family: 'Murecho', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: background 0.2s;
+  position: relative;
+  height: 40px;
+}
+
+.superadmin-users-page .nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.superadmin-users-page .nav-item svg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.superadmin-users-page .nav-item.active-section {
+  font-weight: 500;
+  position: relative;
+}
+
+.superadmin-users-page .nav-item.active-section::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  background: #FFFFFF;
+  border-radius: 2px;
+}
+
+.superadmin-users-page .sub-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+  position: relative;
+  padding-left: 0;
+}
+
+.superadmin-users-page .sub-item {
+  padding-left: 69px;
+  font-size: 12px;
+  line-height: 17px;
+  gap: 10px;
+  height: 20px;
+  border-radius: 2px;
+  position: relative;
+}
+
+.superadmin-users-page .nav-item.sub-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.superadmin-users-page .sub-item.active {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  position: relative;
+}
+
+.superadmin-users-page .sub-item.active::before {
+  content: '';
+  position: absolute;
+  left: -19px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #FFFFFF;
+  border-radius: 1px;
+}
+
+.superadmin-users-page .logout {
+  position: absolute;
+  bottom: 35px;
+  left: 25px;
+  color: #C23939;
+  width: 150px;
+}
+
+/* Main Content */
+.superadmin-users-page .main-content {
+  flex: 1;
+  padding: 30px 73px 100px 0px;
+  overflow-y: auto;
+  margin-left: 60px;
+}
+
+.superadmin-users-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-left: 0px;
+}
+
+.superadmin-users-page .breadcrumb {
+  font-family: 'Murecho', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 29px;
+  color: #5B5B5B;
+  margin: 0;
+}
+
+.superadmin-users-page .header-actions {
+  display: flex;
+  gap: 9px;
+}
+
+.superadmin-users-page .icon-btn {
+  width: 48px;
+  height: 44px;
+  background: #ECF4F6;
+  border: 1px solid #DCDADA;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(50px);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.superadmin-users-page .profile-btn {
+  background: #E6F0F1;
+}
+
+.superadmin-users-page .separator-line {
+  width: 100%;
+  height: 0px;
+  border: 0.75px solid #E4E4E4;
+  margin-bottom: 44px;
+}
+
+.superadmin-users-page .page-title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 35px;
+  padding-left: 0px;
+}
+
+.superadmin-users-page .page-title {
+  font-family: 'Murecho', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 35px;
+  color: #000000;
+  margin: 0;
+}
+
+.superadmin-users-page .page-subtitle {
+  font-family: 'Murecho', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #454545;
+  margin: 6px 0 0 0;
+}
+
+.superadmin-users-page .add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.75px 67.5px;
+  gap: 8px;
+  background: #1E1E1E;
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(1.5px);
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Murecho', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: #FFFFFF;
+  height: 42px;
+}
+
+/* Users Table */
+.superadmin-users-page .users-table-container {
+  background: #FAFBFF;
+  border: 0.5px solid #DCDADA;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.03);
+  border-radius: 13px;
+  padding: 25px 47px;
+  margin-left: 0px;
+}
+
+.superadmin-users-page .users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.superadmin-users-page .users-table thead th {
+  font-family: 'Murecho', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 26px;
+  color: #1A1A1A;
+  text-align: left;
+  padding-bottom: 22px;
+  border-bottom: 0.75px solid #E4E4E4;
+}
+
+.superadmin-users-page .users-table thead th:first-child {
+  padding-left: 0;
+}
+
+.superadmin-users-page .users-table thead th:nth-child(2) {
+  padding-left: 154px;
+}
+
+.superadmin-users-page .users-table thead th:nth-child(3) {
+  padding-left: 106px;
+}
+
+.superadmin-users-page .users-table thead th:nth-child(4) {
+  padding-left: 92px;
+}
+
+.superadmin-users-page .users-table thead th:nth-child(5) {
+  padding-left: 82px;
+}
+
+.superadmin-users-page .users-table tbody td {
+  font-family: 'Murecho', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 23px;
+  color: #454545;
+  padding: 27px 0;
+  border-bottom: 0.5px solid #E4E4E4;
+}
+
+.superadmin-users-page .users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.superadmin-users-page .users-table tbody td:first-child {
+  padding-left: 0;
+}
+
+.superadmin-users-page .users-table tbody td:nth-child(2) {
+  padding-left: 67px;
+}
+
+.superadmin-users-page .users-table tbody td:nth-child(3) {
+  padding-left: 106px;
+}
+
+.superadmin-users-page .users-table tbody td:nth-child(4) {
+  padding-left: 92px;
+}
+
+.superadmin-users-page .users-table tbody td:nth-child(5) {
+  padding-left: 82px;
+}
+
+.superadmin-users-page .status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 23px;
+  border-radius: 10px;
+  font-family: 'Murecho', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  width: 90px;
+}
+
+.superadmin-users-page .status-badge.active {
+  background: #CFFACF;
+  border: 1px solid #008000;
+  color: #008000;
+}
+
+.superadmin-users-page .status-badge.inactive {
+  background: #F8D1D1;
+  border: 1px solid #BF2020;
+  color: #BF2020;
+}
+
+/* Action Buttons */
+.superadmin-users-page .action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.superadmin-users-page .action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.superadmin-users-page .action-btn:hover {
+  opacity: 0.7;
+}
+
+.superadmin-users-page .action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .superadmin-users-page .superadmin-sidebar {
+    width: 200px;
+  }
+
+  .superadmin-users-page .main-content {
+    padding: 24px 40px;
+  }
+
+  .superadmin-users-page .users-table thead th:nth-child(2) {
+    padding-left: 80px;
+  }
+
+  .superadmin-users-page .users-table thead th:nth-child(3) {
+    padding-left: 60px;
+  }
+
+  .superadmin-users-page .users-table thead th:nth-child(4) {
+    padding-left: 60px;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(2) {
+    padding-left: 80px;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(3) {
+    padding-left: 60px;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(4) {
+    padding-left: 60px;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(5) {
+    padding-left: 60px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .superadmin-users-page {
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .superadmin-users-page .superadmin-sidebar {
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 20px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .superadmin-users-page .sidebar-content {
+    padding: 20px 0;
+  }
+
+  .superadmin-users-page .logo-container {
+    position: static;
+    margin: 0 auto 20px;
+  }
+
+  .superadmin-users-page .nav-menu {
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .superadmin-users-page .nav-item {
+    padding: 5px 20px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .superadmin-users-page .sub-menu {
+    padding-left: 20px;
+  }
+
+  .superadmin-users-page .nav-item.sub-item {
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .superadmin-users-page .logout {
+    position: static;
+    margin: 20px auto 0;
+    width: auto;
+  }
+
+  .superadmin-users-page .main-content {
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  .superadmin-users-page .page-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .superadmin-users-page .breadcrumb {
+    font-size: 16px;
+  }
+
+  .superadmin-users-page .page-title-section {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+    margin-bottom: 25px;
+  }
+
+  .superadmin-users-page .page-title {
+    font-size: 20px;
+  }
+
+  .superadmin-users-page .page-subtitle {
+    font-size: 12px;
+  }
+
+  .superadmin-users-page .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .superadmin-users-page .users-table-container {
+    overflow-x: auto;
+  }
+
+  .superadmin-users-page .users-table {
+    min-width: 600px;
+  }
+
+  .superadmin-users-page .users-table thead th {
+    font-size: 14px;
+    padding-bottom: 15px;
+  }
+
+  .superadmin-users-page .users-table thead th:nth-child(2),
+  .superadmin-users-page .users-table thead th:nth-child(3),
+  .superadmin-users-page .users-table thead th:nth-child(4) {
+    padding-left: 40px;
+  }
+
+  .superadmin-users-page .users-table tbody td {
+    font-size: 12px;
+    padding: 15px 0;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(2),
+  .superadmin-users-page .users-table tbody td:nth-child(3),
+  .superadmin-users-page .users-table tbody td:nth-child(4) {
+    padding-left: 40px;
+  }
+
+  .superadmin-users-page .users-table tbody td:nth-child(5) {
+    padding-left: 40px;
+  }
+
+  .superadmin-users-page .status-badge {
+    padding: 4px 15px;
+    font-size: 12px;
+    width: 75px;
+  }
+
+  .superadmin-users-page .action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .superadmin-users-page .icon-btn {
+    width: 40px;
+    height: 38px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .superadmin-users-page .main-content {
+    padding: 15px;
+  }
+
+  .superadmin-users-page .breadcrumb {
+    font-size: 14px;
+  }
+
+  .superadmin-users-page .page-title {
+    font-size: 18px;
+  }
+
+  .superadmin-users-page .users-table {
+    min-width: 500px;
+  }
+
+  .superadmin-users-page .users-table thead th {
+    font-size: 12px;
+  }
+
+  .superadmin-users-page .users-table tbody td {
+    font-size: 11px;
+  }
+
+  .superadmin-users-page .header-actions {
+    gap: 5px;
+  }
+
+  .superadmin-users-page .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .superadmin-users-page .add-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+}

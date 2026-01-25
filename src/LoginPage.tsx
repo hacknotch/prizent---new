@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [userType, setUserType] = useState<'brand' | 'superadmin' | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // After successful login, redirect to brands page
-    navigate('/brands');
+    // Navigate based on selected user type
+    if (userType === 'superadmin') {
+      navigate('/superadmin');
+    } else if (userType === 'brand') {
+      navigate('/brands');
+    }
   };
 
   return (
@@ -17,6 +22,25 @@ const LoginPage: React.FC = () => {
         <div className="login-content">
           <h1 className="login-title">Prizent</h1>
           <p className="login-subtitle">Where fashion meets intelligent pricing</p>
+          
+          {/* User Type Selection */}
+          <div className="user-type-selection">
+            <button
+              type="button"
+              className={`user-type-btn ${userType === 'brand' ? 'active' : ''}`}
+              onClick={() => setUserType('brand')}
+            >
+              Brand User
+            </button>
+            <button
+              type="button"
+              className={`user-type-btn ${userType === 'superadmin' ? 'active' : ''}`}
+              onClick={() => setUserType('superadmin')}
+            >
+              Super Admin
+            </button>
+          </div>
+
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="login-form-group">
               <label htmlFor="email" className="login-label">Your Email</label>
@@ -29,7 +53,7 @@ const LoginPage: React.FC = () => {
             <div className="login-actions">
               <button type="button" className="forgot-password-btn">Forgot password?</button>
             </div>
-            <button type="submit" className="login-btn">Access workspace</button>
+            <button type="submit" className="login-btn" disabled={!userType}>Access workspace</button>
           </form>
         </div>
       </div>

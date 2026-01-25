@@ -1,0 +1,238 @@
+/* Sidebar styling */
+.superadmin-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 340px;
+  height: 100vh;
+  background-color: #1E1E1E;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-radius: 0px 30px 30px 0px;
+  overflow: hidden;
+}
+
+.superadmin-sidebar .sidebar-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Logo styling */
+.superadmin-sidebar .logo-container {
+  position: absolute;
+  left: 22px;
+  top: 44px;
+}
+
+.superadmin-sidebar .logo-image {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+/* Navigation menu */
+.superadmin-sidebar .nav-menu {
+  position: absolute;
+  top: 65px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
+}
+
+.superadmin-sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 15px;
+  color: #E1E1E1;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.superadmin-sidebar .nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.superadmin-sidebar .nav-item.active-section {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.superadmin-sidebar .nav-item svg {
+  flex-shrink: 0;
+}
+
+.superadmin-sidebar .nav-item span {
+  flex: 1;
+}
+
+/* Sub-menu styling */
+.superadmin-sidebar .sub-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 10px;
+  padding-right: 20px;
+}
+
+.superadmin-sidebar .sub-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  gap: 10px;
+  border-radius: 10px;
+}
+
+.superadmin-sidebar .sub-item.active {
+  background-color: #2C2C2C;
+  color: #FFFFFF;
+  border-radius: 10px;
+}
+
+.superadmin-sidebar .sub-item.active svg path {
+  fill: #FFFFFF;
+}
+
+/* Logout button */
+.superadmin-sidebar .logout {
+  position: absolute;
+  bottom: 35px;
+  left: 25px;
+  width: calc(100% - 50px);
+  color: #C23939;
+}
+
+.superadmin-sidebar .logout:hover {
+  background-color: rgba(194, 57, 57, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .superadmin-sidebar {
+    width: 220px;
+  }
+
+  .superadmin-sidebar .logo-container {
+    left: 18px;
+    top: 36px;
+  }
+
+  .superadmin-sidebar .logo-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .superadmin-sidebar .nav-menu {
+    padding: 0 20px;
+  }
+
+  .superadmin-sidebar .nav-item {
+    padding: 11px 16px;
+    font-size: 13px;
+  }
+
+  .superadmin-sidebar .sub-menu {
+    margin-left: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .superadmin-sidebar {
+    width: 180px;
+  }
+
+  .superadmin-sidebar .logo-container {
+    left: 15px;
+    top: 30px;
+  }
+
+  .superadmin-sidebar .logo-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .superadmin-sidebar .nav-menu {
+    padding: 0 15px;
+    gap: 8px;
+  }
+
+  .superadmin-sidebar .nav-item {
+    padding: 9px 12px;
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  .superadmin-sidebar .nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .superadmin-sidebar .sub-menu {
+    margin-left: 10px;
+    gap: 6px;
+  }
+
+  .superadmin-sidebar .sub-item {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .superadmin-sidebar .logout {
+    bottom: 25px;
+    left: 15px;
+    width: calc(100% - 30px);
+  }
+}
+
+@media (max-width: 480px) {
+  .superadmin-sidebar {
+    width: 150px;
+  }
+
+  .superadmin-sidebar .logo-container {
+    left: 12px;
+    top: 24px;
+  }
+
+  .superadmin-sidebar .logo-image {
+    width: 35px;
+    height: 35px;
+  }
+
+  .superadmin-sidebar .nav-menu {
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .superadmin-sidebar .nav-item {
+    padding: 8px 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  .superadmin-sidebar .nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .superadmin-sidebar .sub-menu {
+    margin-left: 8px;
+  }
+
+  .superadmin-sidebar .sub-item {
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .superadmin-sidebar .logout {
+    bottom: 20px;
+    left: 12px;
+    width: calc(100% - 24px);
+  }
+}
