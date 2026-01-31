@@ -1,55 +1,41 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './AddUserPage.css';
-import SuperAdminNavbar from './components/SuperAdminNavbar';
+import './SuperAdminUsersPage.css';
 
-const AddUserPage: React.FC = () => {
+const SuperAdminUsersPage: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: '',
-    role: '',
-    designation: '',
-    phone: '',
-    email: '',
-    loginUsername: '',
-    password: '',
-    enableUser: false
-  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
-  };
-
-  const handleSubmit = () => {
-    console.log('User data:', formData);
-    // Add user creation logic here
-    navigate('/superadmin/users');
-  };
-
-  const handleCancel = () => {
-    navigate('/superadmin/users');
-  };
+  const users = [
+    {
+      id: 1,
+      name: 'Arjun Mehta',
+      role: 'Admin / Operations Lead',
+      username: 'arjun.mehta',
+      status: 'active'
+    },
+    {
+      id: 2,
+      name: 'Neha Sharma',
+      role: 'Manager / Sales Manager',
+      username: 'neha.sharma',
+      status: 'inactive'
+    },
+    {
+      id: 3,
+      name: 'Rohan Verma',
+      role: 'Viewer / Support Executive',
+      username: 'rohan.verma',
+      status: 'active'
+    }
+  ];
 
   return (
-    <div className="add-user-page">
-      <SuperAdminNavbar />
-
+    <div className="superadmin-users-page">
       {/* Main Content */}
       <main className="main-content">
         {/* Header */}
         <header className="page-header">
-          <div className="header-left">
-            <button className="back-btn" onClick={handleCancel}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <h2 className="page-title">Add User</h2>
-          </div>
+          <h2 className="breadcrumb">Configuration &gt; Users</h2>
           <div className="header-actions">
             <button className="icon-btn">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,104 +59,65 @@ const AddUserPage: React.FC = () => {
           </div>
         </header>
 
-        {/* User Details Section */}
-        <section className="form-section">
-          <h3 className="section-title">User Details</h3>
-          <div className="form-grid">
-            <input
-              type="text"
-              name="username"
-              placeholder="enter user name"
-              className="form-input"
-              value={formData.username}
-              onChange={handleInputChange}
-            />
-            <select
-              name="role"
-              className="form-select"
-              value={formData.role}
-              onChange={handleInputChange}
-            >
-              <option value="">role</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="user">User</option>
-            </select>
-            <input
-              type="text"
-              name="designation"
-              placeholder="designation"
-              className="form-input"
-              value={formData.designation}
-              onChange={handleInputChange}
-            />
+        {/* Page Title */}
+        <div className="page-title-section">
+          <div>
+            <h1 className="page-title">Users List</h1>
+            <p className="page-subtitle">{users.length} Total number to items</p>
           </div>
-        </section>
-
-        {/* User Credentials Section */}
-        <section className="form-section">
-          <h3 className="section-title">User Credentials</h3>
-          <div className="credentials-container">
-            <div className="credentials-left">
-              <input
-                type="tel"
-                name="phone"
-                placeholder="user phone no."
-                className="form-input"
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="user email"
-                className="form-input"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-              <input
-                type="text"
-                name="loginUsername"
-                placeholder="Username"
-                className="form-input"
-                value={formData.loginUsername}
-                onChange={handleInputChange}
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                className="form-input"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="credentials-right">
-              <label className="checkbox-container">
-                <input
-                  type="checkbox"
-                  name="enableUser"
-                  checked={formData.enableUser}
-                  onChange={handleInputChange}
-                />
-                <span className="checkbox-label">Enable user</span>
-              </label>
-            </div>
-          </div>
-        </section>
-
-        {/* Action Buttons */}
-        <div className="form-actions">
-          <button className="cancel-btn" onClick={handleCancel}>
-            Cancle
+          <button className="add-btn" onClick={() => navigate('/superadmin/add-user')}>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M5 0V10M0 5H10" stroke="#FFFFFF" strokeWidth="2"/>
+            </svg>
+            Add New User
           </button>
-          <button className="save-btn" onClick={handleSubmit}>
-            SAVE
-          </button>
+        </div>
+
+        {/* Users Table */}
+        <div className="users-table-container">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role/Designation</th>
+                <th>Username</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="user-name">{user.name}</td>
+                  <td className="user-role">{user.role}</td>
+                  <td className="user-username">{user.username}</td>
+                  <td>
+                    <span className={`status-badge ${user.status}`}>
+                      {user.status === 'active' ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="action-btn edit-btn" onClick={() => navigate(`/superadmin/edit-user/${user.id}`)}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12.9143 0C12.1418 0 11.3694 0.292612 10.7809 0.880547L1.48058 10.1845C1.44913 10.2159 1.42726 10.2556 1.41632 10.2986L0.00812566 15.6873C-0.0144334 15.7734 0.01086 15.8643 0.0730658 15.9265C0.135273 15.9894 0.22619 16.014 0.312324 15.9922L5.70245 14.5838C5.74484 14.5729 5.7838 14.5503 5.81525 14.5196L15.1182 5.21773C16.2939 4.04182 16.2939 2.12692 15.1182 0.950983L15.0478 0.880567C14.4599 0.292613 13.6867 0.000701771 12.9143 0.000701771L12.9143 0ZM12.9143 0.496332C13.5575 0.496332 14.2022 0.742441 14.6951 1.2347L14.7634 1.30306C15.7485 2.28822 15.7485 3.87844 14.7634 4.86361L13.1549 6.47159L9.52723 2.84348L11.135 1.23482C11.6272 0.742585 12.2705 0.496458 12.9144 0.496458L12.9143 0.496332ZM9.17369 3.19685L12.8014 6.82496L5.50887 14.119L0.598061 15.4015L1.88252 10.4902L9.17369 3.19685Z" fill="#656565"/>
+                        </svg>
+                      </button>
+                      <button className="action-btn delete-btn">
+                        <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5.55545 0C4.96388 0 4.47766 0.449134 4.47766 0.998756V1.55795H1.36658C0.615143 1.55795 0 2.12808 0 2.82538C0 3.45977 0.508322 3.98752 1.16547 4.07775L1.1662 13.8999C1.1662 15.06 2.18285 16 3.43369 16H11.5684C12.8193 16 13.8338 15.06 13.8338 13.8999L13.8345 4.07845C14.4924 3.9889 15 3.46047 15 2.82608C15 2.12878 14.3871 1.55865 13.6356 1.55865H10.5245V0.999456C10.5245 0.450517 10.0383 0.000699971 9.44601 0.000699971L5.55545 0ZM5.55545 0.499728H9.44599C9.74657 0.499728 9.98526 0.719168 9.98526 0.998091V1.55729L5.01689 1.55797V0.998775C5.01689 0.719851 5.25484 0.500412 5.55543 0.500412L5.55545 0.499728ZM1.36655 2.05768H13.6349C14.0975 2.05768 14.4622 2.39607 14.4622 2.82538C14.4622 3.25468 14.0975 3.59171 13.6349 3.59171H1.3673C0.904656 3.59171 0.539252 3.25468 0.539252 2.82538C0.539252 2.39607 0.904656 2.05768 1.3673 2.05768H1.36655ZM1.7047 4.09142L13.2975 4.0921V13.8999C13.2975 14.7914 12.5313 15.5016 11.5692 15.5016L3.43372 15.5023C2.47158 15.5023 1.70468 14.792 1.70468 13.9006L1.7047 4.09142ZM4.30091 6.66871C4.22945 6.66871 4.16093 6.69537 4.11084 6.74185C4.06001 6.78902 4.03201 6.85328 4.03201 6.91959V12.6743C4.03275 12.8124 4.15283 12.9231 4.30091 12.9238C4.37237 12.9238 4.44162 12.8978 4.49245 12.8514C4.54254 12.8042 4.57128 12.7406 4.57201 12.6743V6.9196C4.57201 6.8526 4.54328 6.78903 4.49319 6.74186C4.44235 6.69469 4.3731 6.66802 4.30091 6.66871ZM7.50119 6.66871C7.42973 6.66802 7.36048 6.69469 7.30965 6.74185C7.25882 6.78902 7.23082 6.8526 7.23082 6.91959V12.6743C7.23156 12.7406 7.26029 12.8042 7.31039 12.8513C7.36122 12.8978 7.42973 12.9238 7.50119 12.9238C7.64927 12.9231 7.76935 12.8117 7.77009 12.6743V6.91958C7.77009 6.85327 7.74209 6.7897 7.692 6.74253C7.64117 6.69536 7.57264 6.66871 7.50119 6.66871ZM10.6999 6.66871C10.6285 6.66871 10.56 6.69537 10.5091 6.74254C10.459 6.78971 10.431 6.85328 10.431 6.91959V12.6743C10.4318 12.8117 10.5519 12.9231 10.6999 12.9238C10.8488 12.9245 10.9696 12.8124 10.9703 12.6743V6.91959C10.9703 6.8526 10.9423 6.78902 10.8915 6.74186C10.8407 6.69469 10.7714 6.66802 10.6999 6.66871Z" fill="#656565"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </main>
     </div>
   );
 };
 
-export default AddUserPage;
+export default SuperAdminUsersPage;

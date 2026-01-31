@@ -1,0 +1,24 @@
+.app-layout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden;
+  background: url('../assets/artistic-blurry-colorful-wallpaper-background.jpeg') no-repeat center center;
+  background-size: cover;
+}
+
+.app-main {
+  flex: 1;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 0;
+  background: transparent;
+}
+
+/* Reuse navbar styles from SuperAdminNavbar.css for the sidebar */

@@ -1,12 +1,10 @@
 .add-user-page {
   box-sizing: border-box;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: url('../assets/artistic-blurry-colorful-wallpaper-background.jpeg') no-repeat center center;
-  background-size: cover;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  background: transparent;
   display: flex;
   font-family: 'Murecho', sans-serif;
   overflow: hidden;
