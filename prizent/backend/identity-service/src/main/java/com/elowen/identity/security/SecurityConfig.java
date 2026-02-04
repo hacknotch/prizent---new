@@ -25,6 +25,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/admin/users/**").permitAll()  // User management endpoints
                 .requestMatchers("/api/test/**").permitAll()  // For testing only
                 .anyRequest().authenticated()
             );

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import userService from '../services/userService';
+import authService from '../services/authService';
 import './AddUserPage.css';
 
 const AddUserPage: React.FC = () => {
@@ -14,6 +16,8 @@ const AddUserPage: React.FC = () => {
     password: '',
     enableUser: false
   });
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -21,12 +25,57 @@ const AddUserPage: React.FC = () => {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+    setError(''); // Clear error on input change
   };
 
-  const handleSubmit = () => {
-    console.log('User data:', formData);
-    // Add user creation logic here
-    navigate('/superadmin');
+  const handleSubmit = async () => {
+    // Validation
+    if (!formData.username.trim()) {
+      setError('Username is required');
+      return;
+    }
+    if (!formData.role) {
+      setError('Role is required');
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      return;
+    }
+    if (!formData.loginUsername.trim()) {
+      setError('Login username is required');
+      return;
+    }
+    if (!formData.password.trim()) {
+      setError('Password is required');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const currentUser = authService.getCurrentUser();
+      const clientId = currentUser?.clientId || 1;
+      
+      await userService.createUser({
+        name: formData.username,
+        username: formData.loginUsername,
+        emailId: formData.email,
+        password: formData.password,
+        role: formData.role,
+        phoneNumber: formData.phone,
+        employeeDesignation: formData.designation,
+        enabled: formData.enableUser
+      }, clientId);
+      
+      // Success - navigate back to user list
+      navigate('/superadmin');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to create user. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -73,6 +122,7 @@ const AddUserPage: React.FC = () => {
         {/* User Details Section */}
         <section className="form-section">
           <h3 className="section-title">User Details</h3>
+          {error && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
           <div className="form-grid">
             <input
               type="text"
@@ -89,9 +139,10 @@ const AddUserPage: React.FC = () => {
               onChange={handleInputChange}
             >
               <option value="">role</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="user">User</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MANAGER">Manager</option>
+              <option value="USER">User</option>
             </select>
             <input
               type="text"
@@ -158,11 +209,11 @@ const AddUserPage: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="form-actions">
-          <button className="cancel-btn" onClick={handleCancel}>
+          <button className="cancel-btn" onClick={handleCancel} disabled={loading}>
             Cancle
           </button>
-          <button className="save-btn" onClick={handleSubmit}>
-            SAVE
+          <button className="save-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Saving...' : 'SAVE'}
           </button>
         </div>
       </main>

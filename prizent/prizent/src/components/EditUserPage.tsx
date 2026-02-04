@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import userService from '../services/userService';
 import './AddUserPage.css';
 
 const EditUserPage: React.FC = () => {
@@ -16,6 +17,44 @@ const EditUserPage: React.FC = () => {
     password: '',
     enableUser: true
   });
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchLoading, setFetchLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!userId) {
+        setError('User ID is missing');
+        setFetchLoading(false);
+        return;
+      }
+
+      try {
+        const response = await userService.getUserById(Number(userId));
+        const user = response.user;
+        if (user) {
+          setFormData({
+            username: user.name || '',
+            role: user.role || '',
+            designation: user.employeeDesignation || '',
+            phone: user.phoneNumber || '',
+            email: user.emailId || '',
+            loginUsername: user.username || '',
+            password: '', // Don't populate password
+            enableUser: user.enabled || false
+          });
+        } else {
+          setError('User not found');
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load user data');
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -23,12 +62,62 @@ const EditUserPage: React.FC = () => {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+    setError(''); // Clear error on input change
   };
 
-  const handleSubmit = () => {
-    console.log('Updated user data:', formData);
-    // Add user update logic here
-    navigate('/superadmin');
+  const handleSubmit = async () => {
+    if (!userId) {
+      setError('User ID is missing');
+      return;
+    }
+
+    // Validation
+    if (!formData.username.trim()) {
+      setError('Username is required');
+      return;
+    }
+    if (!formData.role) {
+      setError('Role is required');
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      return;
+    }
+    if (!formData.loginUsername.trim()) {
+      setError('Login username is required');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const updateData: any = {
+        name: formData.username,
+        username: formData.loginUsername,
+        emailId: formData.email,
+        role: formData.role,
+        phoneNumber: formData.phone,
+        employeeDesignation: formData.designation,
+        enabled: formData.enableUser
+      };
+      
+      // Only include password if it's not empty
+      if (formData.password && formData.password.trim().length > 0) {
+        updateData.password = formData.password;
+      }
+      
+      await userService.updateUser(Number(userId), updateData);
+      
+      // Success - navigate back to user list
+      navigate('/superadmin');
+    } catch (err: any) {
+      console.error('Update user error:', err);
+      setError(err.response?.data?.message || 'Failed to update user. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -40,6 +129,16 @@ const EditUserPage: React.FC = () => {
     // Add password reset logic here
     alert('Password reset link sent to user email');
   };
+
+  if (fetchLoading) {
+    return (
+      <div className="add-user-page">
+        <main className="main-content">
+          <div style={{padding: '20px', textAlign: 'center'}}>Loading user data...</div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="add-user-page">
@@ -81,6 +180,7 @@ const EditUserPage: React.FC = () => {
         {/* User Details Section */}
         <section className="form-section">
           <h3 className="section-title">User Details</h3>
+          {error && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
           <div className="form-grid">
             <input
               type="text"
@@ -97,9 +197,10 @@ const EditUserPage: React.FC = () => {
               onChange={handleInputChange}
             >
               <option value="">role</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="user">User</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="ADMIN">Admin</option>
+              <option value="MANAGER">Manager</option>
+              <option value="USER">User</option>
             </select>
             <input
               type="text"
@@ -144,7 +245,7 @@ const EditUserPage: React.FC = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
+                placeholder="Password (leave blank to keep current)"
                 className="form-input"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -169,11 +270,11 @@ const EditUserPage: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="form-actions">
-          <button className="cancel-btn" onClick={handleCancel}>
+          <button className="cancel-btn" onClick={handleCancel} disabled={loading}>
             Cancle
           </button>
-          <button className="save-btn" onClick={handleSubmit}>
-            SAVE
+          <button className="save-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Updating...' : 'SAVE'}
           </button>
         </div>
       </main>
