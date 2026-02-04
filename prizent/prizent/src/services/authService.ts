@@ -63,25 +63,29 @@ const authService = {
 
   // Logout
   logout: async () => {
+    console.log('=== AUTH SERVICE LOGOUT START ===');
     try {
       const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
       if (token) {
-        // Call backend logout endpoint with Authorization header
-        await apiClient.post('/auth/logout', {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        console.log('Token preview:', token.substring(0, 20) + '...');
+        console.log('Making POST request to /auth/logout...');
+        // Call backend logout endpoint - Authorization header will be added by interceptor
+        const response = await apiClient.post('/auth/logout', {});
         console.log('✓ Backend logout successful');
+        console.log('Response:', response.data);
+      } else {
+        console.log('No token found in localStorage');
       }
     } catch (error) {
-      console.error('Error calling backend logout:', error);
+      console.error('❌ Error calling backend logout:', error);
       // Continue with local logout even if backend call fails
     } finally {
       // Always clear local storage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       console.log('✓ Local storage cleared');
+      console.log('=== AUTH SERVICE LOGOUT END ===');
     }
   },
 

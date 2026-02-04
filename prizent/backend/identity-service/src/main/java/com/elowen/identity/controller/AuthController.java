@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -146,48 +147,104 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Transactional
     public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        System.out.println("\n\n");
+        System.out.println("========================================");
+        System.out.println("====== LOGOUT REQUEST RECEIVED =========");
+        System.out.println("========================================");
+        System.out.println("Timestamp: " + LocalDateTime.now());
+        System.out.println("Thread: " + Thread.currentThread().getName());
+        
         try {
+            System.out.println("\n--- Step 1: Check Authorization Header ---");
+            System.out.println("Auth Header present: " + (authHeader != null));
+            System.out.println("Auth Header value: " + authHeader);
+            
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                System.out.println("LOGOUT: No token provided or invalid format");
+                System.out.println("ERROR: No valid Bearer token in header");
                 return ResponseEntity.ok("Logout successful (no session to end)");
             }
 
+            System.out.println("\n--- Step 2: Extract Token ---");
             String token = authHeader.substring(7);
+            System.out.println("Token length: " + token.length());
+            System.out.println("Token preview: " + token.substring(0, Math.min(30, token.length())) + "...");
             
-            // Validate token
-            if (!jwtUtil.isTokenValid(token)) {
-                System.out.println("LOGOUT: Invalid token");
+            System.out.println("\n--- Step 3: Validate Token ---");
+            boolean isValid = jwtUtil.isTokenValid(token);
+            System.out.println("Token valid: " + isValid);
+            
+            if (!isValid) {
+                System.out.println("ERROR: Invalid token");
                 return ResponseEntity.ok("Logout successful (invalid token)");
             }
 
-            // Extract user info from token
+            System.out.println("\n--- Step 4: Extract User Info ---");
             String userIdStr = jwtUtil.extractUserId(token);
             String clientIdStr = jwtUtil.extractClientId(token);
-            
-            System.out.println("LOGOUT: User ID: " + userIdStr + ", Client ID: " + clientIdStr);
+            System.out.println("User ID from token: " + userIdStr);
+            System.out.println("Client ID from token: " + clientIdStr);
 
             Long userId = Long.parseLong(userIdStr);
             Integer clientId = Integer.parseInt(clientIdStr);
+            System.out.println("Parsed - userId: " + userId + ", clientId: " + clientId);
 
-            // Find the latest active login session
+            System.out.println("\n--- Step 5: Find Active Session ---");
+            System.out.println("Searching for active session with clientId=" + clientId + ", userId=" + userId);
             Optional<LoginLogoutHistory> activeSession = loginLogoutHistoryRepository
                 .findLatestActiveLoginByClientIdAndUserId(clientId, userId);
 
+            System.out.println("Active session found: " + activeSession.isPresent());
+            
             if (activeSession.isPresent()) {
                 LoginLogoutHistory history = activeSession.get();
-                history.setLogoutDateTime(LocalDateTime.now());
-                loginLogoutHistoryRepository.save(history);
-                System.out.println("LOGOUT: Logout time updated for session ID: " + history.getId());
+                System.out.println("\n--- Step 6: Update Session ---");
+                System.out.println("Session ID: " + history.getId());
+                System.out.println("User ID in session: " + history.getUserId());
+                System.out.println("Client ID in session: " + history.getClientId());
+                System.out.println("Login time: " + history.getLoginDateTime());
+                System.out.println("Current logout time: " + history.getLogoutDateTime());
+                
+                LocalDateTime logoutTime = LocalDateTime.now();
+                System.out.println("New logout time: " + logoutTime);
+                System.out.println("Calling updateLogoutTime...");
+                
+                loginLogoutHistoryRepository.updateLogoutTime(history.getId(), logoutTime);
+                
+                System.out.println("Update completed successfully!");
+                System.out.println("Session ID " + history.getId() + " should now have logout time: " + logoutTime);
             } else {
-                System.out.println("LOGOUT: No active session found for user");
+                System.out.println("\n--- ERROR: No Active Session Found ---");
+                System.out.println("WARNING: No active session for userId=" + userId + ", clientId=" + clientId);
+                
+                // Debug: Check if ANY sessions exist for this user
+                System.out.println("\nDEBUG: Checking all sessions for this user...");
+                try {
+                    java.util.List<LoginLogoutHistory> allSessions = loginLogoutHistoryRepository
+                        .findByClientIdAndUserId(clientId, userId);
+                    System.out.println("Total sessions found: " + allSessions.size());
+                    for (LoginLogoutHistory s : allSessions) {
+                        System.out.println("  - Session ID: " + s.getId() + 
+                            ", Login: " + s.getLoginDateTime() + 
+                            ", Logout: " + s.getLogoutDateTime());
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error checking all sessions: " + e.getMessage());
+                }
             }
 
+            System.out.println("\n========================================");
+            System.out.println("====== LOGOUT COMPLETED ================");
+            System.out.println("========================================\n\n");
             return ResponseEntity.ok("Logout successful");
 
         } catch (Exception e) {
-            System.err.println("LOGOUT ERROR: " + e.getMessage());
+            System.err.println("\n!!! LOGOUT ERROR !!!");
+            System.err.println("Exception: " + e.getClass().getName());
+            System.err.println("Message: " + e.getMessage());
             e.printStackTrace();
+            System.err.println("!!! END ERROR !!!\n");
             return ResponseEntity.ok("Logout successful (with errors)");
         }
     }
@@ -264,6 +321,72 @@ public class AuthController {
             Map<String, String> response = new HashMap<>();
             response.put("message", e.getMessage());
             return ResponseEntity.status(400).body(response);
+        }
+    }
+
+    @GetMapping("/test-logout-update")
+    @Transactional
+    public ResponseEntity<Map<String, String>> testLogoutUpdate() {
+        System.out.println("========== TEST LOGOUT UPDATE ==========");
+        Map<String, String> response = new HashMap<>();
+        
+        try {
+            // Find ANY active login
+            System.out.println("Finding all active logins...");
+            java.util.List<LoginLogoutHistory> allActive = loginLogoutHistoryRepository
+                .findActiveSessionsByClientId(1);
+            
+            System.out.println("Found " + allActive.size() + " active sessions");
+            
+            if (allActive.isEmpty()) {
+                System.out.println("No active sessions found");
+                response.put("status", "error");
+                response.put("message", "No active sessions found");
+                return ResponseEntity.ok(response);
+            }
+            
+            // Use the first active session
+            LoginLogoutHistory history = allActive.get(0);
+            System.out.println("Using session ID: " + history.getId());
+            System.out.println("User ID: " + history.getUserId());
+            System.out.println("Client ID: " + history.getClientId());
+            System.out.println("Login time: " + history.getLoginDateTime());
+            System.out.println("Current logout time: " + history.getLogoutDateTime());
+            
+            LocalDateTime logoutTime = LocalDateTime.now();
+            System.out.println("Calling updateLogoutTime with time: " + logoutTime);
+            
+            loginLogoutHistoryRepository.updateLogoutTime(history.getId(), logoutTime);
+            
+            System.out.println("Update called successfully");
+            
+            // Flush to ensure immediate persistence
+            loginLogoutHistoryRepository.flush();
+            System.out.println("Flushed");
+            
+            // Verify the update
+            Optional<LoginLogoutHistory> updated = loginLogoutHistoryRepository.findById(history.getId());
+            if (updated.isPresent()) {
+                System.out.println("After update - Logout time: " + updated.get().getLogoutDateTime());
+                response.put("status", "success");
+                response.put("sessionId", history.getId().toString());
+                response.put("userId", history.getUserId().toString());
+                response.put("logoutTime", updated.get().getLogoutDateTime() != null ? 
+                    updated.get().getLogoutDateTime().toString() : "NULL");
+            } else {
+                response.put("status", "error");
+                response.put("message", "Could not find session after update");
+            }
+            
+            System.out.println("========== TEST COMPLETED ==========");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("TEST ERROR: " + e.getMessage());
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(500).body(response);
         }
     }
 }

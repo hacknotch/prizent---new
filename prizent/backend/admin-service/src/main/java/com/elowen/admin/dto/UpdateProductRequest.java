@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.util.Map;
-
 /**
  * DTO for updating an existing product
  */
@@ -21,20 +19,13 @@ public class UpdateProductRequest {
     @Size(max = 5000, message = "Product description must not exceed 5000 characters")
     private String description;
     
-    /**
-     * Map of attribute ID to attribute value ID
-     * This completely replaces existing attributes (atomic update)
-     */
-    private Map<Integer, Integer> attributes;
-    
     // Constructors
     public UpdateProductRequest() {}
     
-    public UpdateProductRequest(Integer categoryId, String name, String description, Map<Integer, Integer> attributes) {
+    public UpdateProductRequest(Integer categoryId, String name, String description) {
         this.categoryId = categoryId;
         this.name = name;
         this.description = description;
-        this.attributes = attributes;
     }
     
     // Getters and Setters
@@ -62,21 +53,12 @@ public class UpdateProductRequest {
         this.description = description;
     }
     
-    public Map<Integer, Integer> getAttributes() {
-        return attributes;
-    }
-    
-    public void setAttributes(Map<Integer, Integer> attributes) {
-        this.attributes = attributes;
-    }
-    
     @Override
     public String toString() {
         return "UpdateProductRequest{" +
                 "categoryId=" + categoryId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", attributes=" + attributes +
                 '}';
     }
 }

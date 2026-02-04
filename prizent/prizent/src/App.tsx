@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './LoginPage';
+import Logout from './components/Logout';
 import BrandsListPage from './components/BrandsListPage';
 import AddBrandPage from './components/AddBrandPage';
 import CategoriesListPage from './components/CategoriesListPage';
@@ -19,6 +20,7 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/logout" element={<Logout />} />
 
         {/* Routes that show the common sidebar/layout */}
         <Route element={<CommonLayout />}>

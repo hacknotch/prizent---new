@@ -26,7 +26,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/users/**").permitAll()  // User management endpoints
-                .requestMatchers("/api/test/**").permitAll()  // For testing only
                 .anyRequest().authenticated()
             );
 

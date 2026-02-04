@@ -29,16 +29,16 @@ public interface LoginLogoutHistoryRepository extends JpaRepository<LoginLogoutH
 
     /**
      * Find the latest login record for a user (used for logout)
+     * Returns the most recent active session
      */
-    @Query("SELECT h FROM LoginLogoutHistory h WHERE h.clientId = :clientId AND h.userId = :userId " +
-           "AND h.logoutDateTime IS NULL ORDER BY h.loginDateTime DESC")
+    @Query(value = "SELECT * FROM p_login_logout_histories h WHERE h.client_id = :clientId AND h.user_id = :userId " +
+           "AND h.logout_date_time IS NULL ORDER BY h.login_date_time DESC LIMIT 1", nativeQuery = true)
     Optional<LoginLogoutHistory> findLatestActiveLoginByClientIdAndUserId(@Param("clientId") Integer clientId, @Param("userId") Long userId);
 
     /**
      * Update logout time for a specific login record
      */
-    @Modifying
-    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE LoginLogoutHistory h SET h.logoutDateTime = :logoutDateTime WHERE h.id = :id")
     void updateLogoutTime(@Param("id") Long id, @Param("logoutDateTime") LocalDateTime logoutDateTime);
 

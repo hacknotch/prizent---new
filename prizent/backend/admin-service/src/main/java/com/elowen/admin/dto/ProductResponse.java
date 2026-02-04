@@ -2,8 +2,6 @@ package com.elowen.admin.dto;
 
 import com.elowen.admin.entity.Product;
 
-import java.util.List;
-
 /**
  * DTO for Product response
  * Does NOT expose clientId, createDateTime, updateDateTime per requirements
@@ -16,24 +14,22 @@ public class ProductResponse {
     private String name;
     private String description;
     private Boolean enabled;
-    private List<ProductAttributeResponse> attributes;
     
     // Constructors
     public ProductResponse() {}
     
     public ProductResponse(Integer id, Integer categoryId, String categoryName, String name, 
-                          String description, Boolean enabled, List<ProductAttributeResponse> attributes) {
+                          String description, Boolean enabled) {
         this.id = id;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.name = name;
         this.description = description;
         this.enabled = enabled;
-        this.attributes = attributes;
     }
     
     /**
-     * Convert Product entity to ProductResponse DTO (without attributes)
+     * Convert Product entity to ProductResponse DTO
      */
     public static ProductResponse fromEntity(Product product, String categoryName) {
         if (product == null) {
@@ -46,8 +42,7 @@ public class ProductResponse {
             categoryName,
             product.getName(),
             product.getDescription(),
-            product.getEnabled(),
-            null  // Attributes set separately
+            product.getEnabled()
         );
     }
     
@@ -100,14 +95,6 @@ public class ProductResponse {
         this.enabled = enabled;
     }
     
-    public List<ProductAttributeResponse> getAttributes() {
-        return attributes;
-    }
-    
-    public void setAttributes(List<ProductAttributeResponse> attributes) {
-        this.attributes = attributes;
-    }
-    
     @Override
     public String toString() {
         return "ProductResponse{" +
@@ -117,7 +104,6 @@ public class ProductResponse {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", enabled=" + enabled +
-                ", attributes=" + attributes +
                 '}';
     }
 }

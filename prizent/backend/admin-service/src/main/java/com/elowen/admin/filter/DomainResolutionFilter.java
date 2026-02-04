@@ -1,14 +1,12 @@
 package com.elowen.admin.filter;
 
 import com.elowen.admin.context.ClientContext;
-import com.elowen.admin.service.DomainResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,8 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Filter to resolve client from subdomain and set in ClientContext
- * MUST run before JWT authentication to establish tenant context
+ * Filter to set client context (simplified - no domain resolution)
+ * Client ID will be extracted from JWT token in JwtAuthenticationFilter
  */
 @Component
 @Order(1) // Run first, before JWT authentication
@@ -27,47 +25,30 @@ public class DomainResolutionFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(DomainResolutionFilter.class);
 
-    @Autowired
-    private DomainResolver domainResolver;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
                                   HttpServletResponse response, 
                                   FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            // Extract domain from Host header first, fallback to server name
-            String hostHeader = request.getHeader("Host");
-            String serverName = hostHeader != null ? hostHeader : request.getServerName();
-            logger.debug("Processing request for server: {} (Host header: {})", serverName, hostHeader);
-
-            // Skip domain resolution for certain endpoints
             String requestURI = request.getRequestURI();
+            logger.debug("Processing request: {}", requestURI);
+
+            // Skip for public endpoints
             if (shouldSkipDomainResolution(requestURI)) {
-                logger.debug("Skipping domain resolution for: {}", requestURI);
+                logger.debug("Skipping for: {}", requestURI);
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // Get client from domain resolution
-            Integer clientId = domainResolver.resolveClientFromDomain(serverName);
+            // Client context will be extracted from JWT token in JwtAuthenticationFilter
+            // This filter just ensures context is cleared after request
             
-            if (clientId != null) {
-                // Set client context for this request thread
-                ClientContext.setClientId(clientId);
-                logger.debug("Set client context: {} for domain: {}", clientId, serverName);
-            } else {
-                // For localhost/development: allow request to proceed
-                // Client context will be extracted from JWT token in JwtAuthenticationFilter
-                logger.debug("No client from domain: {} - will extract from JWT token", serverName);
-            }
-            
-            // Always continue with request - JWT filter will handle client validation
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            logger.error("Error in domain resolution: {}", e.getMessage(), e);
-            sendErrorResponse(response, "Domain resolution failed");
+            logger.error("Error in domain resolution filter: {}", e.getMessage(), e);
+            sendErrorResponse(response, "Request processing failed");
         } finally {
             // Always clear context after request
             ClientContext.clear();
