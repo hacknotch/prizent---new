@@ -1,20 +1,44 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import brandService from '../services/brandService';
 import './AddBrandPage.css';
 import prizentLogo from '../assets/prizent_logo.png';
 
 const AddBrandPage: React.FC = () => {
+  const navigate = useNavigate();
   const [brandName, setBrandName] = useState('');
   const [brandDescription, setBrandDescription] = useState('');
-  const [activateBrand, setActivateBrand] = useState(false);
+  const [activateBrand, setActivateBrand] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSave = () => {
-    // Handle save logic here
-    console.log({ brandName, brandDescription, activateBrand });
+  const handleSave = async () => {
+    if (!brandName.trim()) {
+      setError('Brand name is required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      
+      await brandService.createBrand({
+        name: brandName.trim(),
+        description: brandDescription.trim() || undefined,
+        enabled: activateBrand
+      });
+      
+      navigate('/brands');
+    } catch (err: any) {
+      console.error('Error creating brand:', err);
+      setError(err.response?.data?.message || 'Failed to create brand');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    // Handle cancel logic here
-    window.history.back();
+    navigate('/brands');
   };
 
   return (
@@ -57,6 +81,8 @@ const AddBrandPage: React.FC = () => {
           <h2 className="section-title">Brand Details</h2>
 
           <div className="brand-form">
+            {error && <div style={{color: 'red', marginBottom: '10px', padding: '10px', backgroundColor: '#ffebee', borderRadius: '4px'}}>{error}</div>}
+            
             <div className="upload-section">
               <svg width="360" height="230" viewBox="0 0 257 165" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <mask id="path-1-inside-1_341_1046" fill="white">
@@ -116,11 +142,11 @@ const AddBrandPage: React.FC = () => {
           </div>
 
           <div className="form-actions">
-            <button className="cancel-btn" onClick={handleCancel}>
+            <button className="cancel-btn" onClick={handleCancel} disabled={loading}>
               Cancle
             </button>
-            <button className="save-btn" onClick={handleSave}>
-              SAVE
+            <button className="save-btn" onClick={handleSave} disabled={loading}>
+              {loading ? 'SAVING...' : 'SAVE'}
             </button>
           </div>
         </div>

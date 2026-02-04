@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/admin/categories/**").permitAll() // Temporary: Allow categories without auth
+                .requestMatchers("/api/admin/brands/**").permitAll() // Temporary: Allow brands without auth
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exception -> exception
