@@ -6,6 +6,7 @@ import com.elowen.admin.dto.CreateBrandRequest;
 import com.elowen.admin.dto.UpdateBrandRequest;
 import com.elowen.admin.entity.Brand;
 import com.elowen.admin.repository.BrandRepository;
+import com.elowen.admin.security.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,9 @@ public class BrandController {
 
     @Autowired
     private BrandRepository brandRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     /**
      * Get all brands for the current client
@@ -134,13 +138,17 @@ public class BrandController {
     @PutMapping("/{brandId}")
     public ResponseEntity<Map<String, Object>> updateBrand(
             @PathVariable Long brandId,
-            @Valid @RequestBody UpdateBrandRequest request) {
+            @Valid @RequestBody UpdateBrandRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Integer clientId = ClientContext.getClientId();
         if (clientId == null) {
             clientId = 1; // Default clientId for testing
         }
         System.out.println("UPDATE BRAND request for brandId: " + brandId + ", clientId: " + clientId);
+        
+        // Extract updater's user ID from JWT token
+        Long updatedBy = extractUserIdFromToken(authHeader);
         
         Optional<Brand> brandOpt = brandRepository.findByIdAndClientId(brandId, clientId);
         if (brandOpt.isEmpty()) {
@@ -172,6 +180,11 @@ public class BrandController {
         }
         if (request.getEnabled() != null) {
             brand.setEnabled(request.getEnabled());
+        }
+        
+        // Set updated_by
+        if (updatedBy != null) {
+            brand.setUpdatedBy(updatedBy);
         }
         
         Brand updatedBrand = brandRepository.save(brand);
@@ -214,5 +227,21 @@ public class BrandController {
         
         System.out.println("Brand deleted: ID " + brandId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Helper method to extract userId from JWT token
+     */
+    private Long extractUserIdFromToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                String userIdStr = jwtUtil.extractUserId(token);
+                return Long.parseLong(userIdStr);
+            } catch (Exception e) {
+                System.err.println("Error extracting userId from token: " + e.getMessage());
+            }
+        }
+        return null;
     }
 }

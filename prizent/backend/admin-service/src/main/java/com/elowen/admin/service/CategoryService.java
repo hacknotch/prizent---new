@@ -72,7 +72,7 @@ public class CategoryService {
     }
     
     @Transactional
-    public CategoryResponse updateCategory(Integer categoryId, UpdateCategoryRequest request, Integer clientId) {
+    public CategoryResponse updateCategory(Integer categoryId, UpdateCategoryRequest request, Integer clientId, Long updatedBy) {
         if (request.isEmpty()) {
             return getCategoryById(categoryId, clientId);
         }
@@ -95,8 +95,13 @@ public class CategoryService {
             }
         }
         
+        // Set updated_by
+        if (updatedBy != null) {
+            existingCategory.setUpdatedBy(updatedBy);
+        }
+        
         Category updatedCategory = categoryRepository.save(existingCategory);
-        log.info("Updated category {} for client {}", categoryId, clientId);
+        log.info("Updated category {} for client {} by user {}", categoryId, clientId, updatedBy);
         return CategoryResponse.fromEntity(updatedCategory);
     }
     

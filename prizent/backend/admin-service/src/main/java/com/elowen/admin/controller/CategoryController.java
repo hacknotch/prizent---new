@@ -4,6 +4,7 @@ import com.elowen.admin.dto.CategoryResponse;
 import com.elowen.admin.dto.CategoryTreeNode;
 import com.elowen.admin.dto.CreateCategoryRequest;
 import com.elowen.admin.dto.UpdateCategoryRequest;
+import com.elowen.admin.security.JwtUtil;
 import com.elowen.admin.security.UserPrincipal;
 import com.elowen.admin.service.CategoryService;
 import jakarta.validation.Valid;
@@ -29,6 +30,9 @@ public class CategoryController {
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
     
     private final CategoryService categoryService;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
     
     @Autowired
     public CategoryController(CategoryService categoryService) {
@@ -102,11 +106,14 @@ public class CategoryController {
     public ResponseEntity<Map<String, Object>> updateCategory(
             @PathVariable Integer categoryId,
             @Valid @RequestBody UpdateCategoryRequest request,
-            @AuthenticationPrincipal UserPrincipal principal) {
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         Integer clientId = principal != null ? principal.getClientId() : 1; // Default clientId for testing
+        Long updatedBy = extractUserIdFromToken(authHeader);
+        
         CategoryResponse categoryResponse = categoryService.updateCategory(
-                categoryId, request, clientId);
+                categoryId, request, clientId, updatedBy);
         
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -161,5 +168,21 @@ public class CategoryController {
         response.put("message", "Category deleted successfully");
         
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Helper method to extract userId from JWT token
+     */
+    private Long extractUserIdFromToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                String userIdStr = jwtUtil.extractUserId(token);
+                return Long.parseLong(userIdStr);
+            } catch (Exception e) {
+                log.error("Error extracting userId from token: {}", e.getMessage());
+            }
+        }
+        return null;
     }
 }

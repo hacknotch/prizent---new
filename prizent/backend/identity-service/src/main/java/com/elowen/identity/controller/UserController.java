@@ -153,9 +153,13 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<Map<String, Object>> updateUser(
             @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         
         System.out.println("UPDATE USER request for userId: " + userId);
+        
+        // Extract updater's user ID from JWT token
+        Long updatedBy = extractUserIdFromToken(authHeader);
         
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -207,6 +211,11 @@ public class UserController {
                 response.put("message", "Invalid role. Valid roles are: ADMIN, USER, SUPER_ADMIN");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
+        }
+        
+        // Set updated_by
+        if (updatedBy != null) {
+            user.setUpdatedBy(updatedBy);
         }
         
         User updatedUser = userRepository.save(user);
@@ -302,4 +311,18 @@ public class UserController {
         System.out.println("User deleted: ID " + userId);
         return ResponseEntity.ok(response);
     }
-}
+    /**
+     * Helper method to extract userId from JWT token
+     */
+    private Long extractUserIdFromToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                String userIdStr = jwtUtil.extractUserId(token);
+                return Long.parseLong(userIdStr);
+            } catch (Exception e) {
+                System.err.println("Error extracting userId from token: " + e.getMessage());
+            }
+        }
+        return null;
+    }}

@@ -79,8 +79,11 @@ public class Category {
     private LocalDateTime createDateTime;
     
     @UpdateTimestamp
-    @Column(name = "update_date_time", nullable = false)
+    @Column(name = "update_date_time")
     private LocalDateTime updateDateTime;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
     
     // Constructors
     public Category() {}
@@ -151,6 +154,14 @@ public class Category {
     
     public void setUpdateDateTime(LocalDateTime updateDateTime) {
         this.updateDateTime = updateDateTime;
+    }
+
+    public Long getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Long updatedBy) {
+        this.updatedBy = updatedBy;
     }
     
     @Override

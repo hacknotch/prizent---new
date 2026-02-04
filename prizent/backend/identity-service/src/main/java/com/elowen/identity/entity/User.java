@@ -45,6 +45,9 @@ public class User {
     @Column(name = "update_date_time")
     private LocalDateTime updateDateTime;
 
+    @Column(name = "updated_by")
+    private Long updatedBy;
+
     @PrePersist
     protected void onCreate() {
         createDateTime = LocalDateTime.now();
@@ -155,5 +158,13 @@ public class User {
 
     public void setUpdateDateTime(LocalDateTime updateDateTime) {
         this.updateDateTime = updateDateTime;
+    }
+
+    public Long getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Long updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }
