@@ -1,0 +1,473 @@
+.product-details-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(180deg, #F6FAFF 0%, #FAFBFF 100%);
+  padding: 32px 47px;
+  font-family: 'Murecho', sans-serif;
+  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  max-height: 100vh;
+}
+
+/* Header Styles */
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-arrow-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-arrow-btn:hover {
+  opacity: 0.7;
+}
+
+.details-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #1E1E1E;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+
+.icon-btn-details {
+  width: 48px;
+  height: 44px;
+  background: #ECF4F6;
+  border: 0.5px solid #DCDADA;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-btn-details:hover {
+  background: #E0EEF1;
+}
+
+.product-details-container .profile-btn {
+  background: #ECF4F6;
+}
+
+.product-details-container .header-divider {
+  width: 100%;
+  height: 0.75px;
+  background: #E4E4E4;
+  margin-bottom: 27px;
+}
+
+/* Product Card Styles */
+.product-card-details {
+  position: relative;
+  width: 1550px;
+  height: 194px;
+  background: #FAFBFF;
+  border: 0.5px solid #DCDADA;
+  border-radius: 10px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.03);
+  margin-bottom: 27px;
+}
+
+.product-image-details {
+  position: absolute;
+  width: 225px;
+  height: 194px;
+  left: 0;
+  top: 0;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.product-info {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.product-title-main {
+  position: absolute;
+  width: 300px;
+  height: 29px;
+  left: 251px;
+  top: 28px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 29px;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.product-brand {
+  position: absolute;
+  width: 120px;
+  height: 20px;
+  left: 565px;
+  top: 35px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #3E3E3E;
+  margin: 0;
+}
+
+.top-seller-badge {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 23px;
+  position: absolute;
+  width: 100px;
+  height: 32px;
+  left: 1380px;
+  top: calc(50% - 32px/2 - 51px);
+  background: #CFFACF;
+  border: 1px solid #008000;
+  border-radius: 10px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #008000;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.product-sku {
+  position: absolute;
+  width: 172px;
+  height: 23px;
+  left: 251px;
+  top: 75px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 23px;
+  color: #3E3E3E;
+  margin: 0;
+}
+
+.category-label {
+  position: absolute;
+  width: 220px;
+  height: 23px;
+  left: 251px;
+  top: 115px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 23px;
+  color: #3E3E3E;
+  margin: 0;
+}
+
+.product-category {
+  position: absolute;
+  width: 200px;
+  height: 23px;
+  left: 251px;
+  top: 146px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 23px;
+  color: #3E3E3E;
+  margin: 0;
+}
+
+.mrp-label {
+  position: absolute;
+  width: 26px;
+  height: 17px;
+  left: 1347px;
+  top: 97px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.product-mrp {
+  position: absolute;
+  width: 80px;
+  height: 35px;
+  left: 1379px;
+  top: 83px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 35px;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.product-stock {
+  position: absolute;
+  width: 120px;
+  height: 23px;
+  left: 1347px;
+  top: 141px;
+  font-family: 'Murecho';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 23px;
+  color: #3E3E3E;
+  margin: 0;
+}
+
+.product-details-container .action-buttons-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 27px;
+  justify-content: flex-end;
+  width: 1550px;
+}
+
+.product-details-container .edit-btn {
+  width: 160px;
+  height: 52px;
+  background: transparent;
+  border: 0.5px solid #1E1E1E;
+  border-radius: 6px;
+  font-size: 20px;
+  font-weight: 400;
+  color: #1E1E1E;
+  cursor: pointer;
+  font-family: 'Murecho', sans-serif;
+  transition: all 0.2s;
+}
+
+.product-details-container .edit-btn:hover {
+  background: #F5F5F5;
+}
+
+.product-details-container .calculate-price-btn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 3.75px 67.5px;
+  gap: 8px;
+  width: 260px;
+  height: 52px;
+  background: #1E1E1E;
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(1.5px);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Murecho', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 29px;
+  text-align: center;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.product-details-container .calculate-price-btn:hover {
+  background: #333333;
+}
+
+/* Marketplace Overview Styles */
+.marketplace-overview-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #1E1E1E;
+  margin: 0 0 27px 0;
+}
+
+.marketplace-table-card {
+  width: 1550px;
+  height: 380px;
+  background: #FAFBFF;
+  border: 0.5px solid #DCDADA;
+  border-radius: 13px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.marketplace-table {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-header {
+  display: flex;
+  padding: 18px 32px;
+  background: #FAFBFF;
+}
+
+.header-cell {
+  font-size: 20px;
+  font-weight: 500;
+  color: #1E1E1E;
+  text-align: left;
+  padding-right: 16px;
+}
+
+.table-header-divider {
+  width: 100%;
+  height: 0.75px;
+  background: #D9D9D9;
+}
+
+.table-row {
+  display: flex;
+  padding: 0 32px;
+  align-items: center;
+  height: 90px;
+}
+
+.table-cell {
+  font-size: 16px;
+  font-weight: 400;
+  color: #454545;
+  text-align: left;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.table-row-divider {
+  width: 100%;
+  height: 0.5px;
+  background: #E4E4E4;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 81px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  border: 0.5px solid;
+}
+
+.status-active {
+  background: #CFFACF;
+  border-color: #008000;
+  color: #008000;
+}
+
+.status-inactive {
+  background: #F8D1D1;
+  border-color: #BF2020;
+  color: #BF2020;
+}
+
+/* Responsive Styles */
+@media (max-width: 1280px) {
+  .product-card-details,
+  .marketplace-table-card {
+    width: 90%;
+    max-width: 1550px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-details-container {
+    padding: 20px;
+  }
+
+  .details-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .product-card-details {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    position: relative;
+  }
+
+  .product-image-details {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    left: 0;
+    top: 0;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .product-title-main,
+  .product-brand,
+  .product-sku,
+  .category-label,
+  .product-category,
+  .mrp-label,
+  .product-mrp,
+  .product-stock,
+  .top-seller-badge {
+    position: relative;
+    left: 16px;
+    width: auto;
+  }
+
+  .product-details-container .action-buttons-section {
+    flex-direction: column;
+  }
+
+  .product-details-container .edit-btn,
+  .product-details-container .calculate-price-btn {
+    width: 100%;
+  }
+
+  .marketplace-table-card {
+    width: 100%;
+    height: auto;
+    overflow-x: auto;
+  }
+
+  .table-header,
+  .table-row {
+    min-width: 1200px;
+  }
+}

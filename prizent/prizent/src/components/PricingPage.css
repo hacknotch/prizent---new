@@ -2,10 +2,8 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  background: url('../assets/artistic-blurry-colorful-wallpaper-background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent;
+  
   display: flex;
   font-family: 'Murecho', sans-serif;
 }
@@ -55,7 +53,7 @@
   background: #E6F0F1;
 }
 
-.pricing-divider {
+.pricing-bg .pricing-divider {
   width: 100%;
   height: 0.75px;
   background: #E4E4E4;
@@ -123,14 +121,14 @@
   pointer-events: none;
 }
 
-.action-buttons {
+.pricing-bg .action-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
   margin-top: 20px;
 }
 
-.btn-secondary {
+.pricing-bg .btn-secondary {
   padding: 12px 24px;
   height: 52px;
   background: #FFFFFF;
@@ -145,11 +143,11 @@
   transition: all 0.3s ease;
 }
 
-.btn-secondary:hover {
+.pricing-bg .btn-secondary:hover {
   background: #F5F5F5;
 }
 
-.btn-primary {
+.pricing-bg .btn-primary {
   padding: 12px 48px;
   height: 52px;
   background: #1E1E1E;
@@ -165,7 +163,7 @@
   transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
+.pricing-bg .btn-primary:hover {
   background: #000000;
 }
 
@@ -241,12 +239,12 @@
     grid-template-columns: 1fr;
   }
 
-  .action-buttons {
+  .pricing-bg .action-buttons {
     flex-direction: column;
   }
 
-  .btn-secondary,
-  .btn-primary {
+  .pricing-bg .btn-secondary,
+  .pricing-bg .btn-primary {
     width: 100%;
   }
 

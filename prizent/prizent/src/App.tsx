@@ -15,6 +15,8 @@ import ProductsListPage from './components/ProductsListPage';
 import CustomFieldsPage from './components/CustomFieldsPage';
 import CommonLayout from './components/CommonLayout';
 import PricingPage from './components/PricingPage';
+import PriceCalculationPage from './components/PriceCalculationPage';
+import ProductDetailsPage from './components/ProductDetailsPage';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +28,8 @@ const App: React.FC = () => {
         {/* Routes that show the common sidebar/layout */}
         <Route element={<CommonLayout />}>
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/price-calculator" element={<PriceCalculationPage />} />
+          <Route path="/product-details" element={<ProductDetailsPage />} />
           <Route path="/superadmin" element={<SuperAdminUsersPage />} />
           <Route path="/superadmin/add-user" element={<AddUserPage />} />
           <Route path="/superadmin/edit-user/:userId" element={<EditUserPage />} />

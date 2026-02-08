@@ -4,10 +4,7 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: url('../assets/artistic-blurry-colorful-wallpaper-background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent;
   padding: 24px 32px 40px;
 }
 

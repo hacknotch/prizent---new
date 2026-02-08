@@ -4,10 +4,7 @@
   max-width: 100%;
   min-height: 100%;
   max-height: 100%;
-  background: url('../assets/artistic-blurry-colorful-wallpaper-background.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent;
   font-family: 'Murecho', sans-serif;
   overflow: hidden;
   margin: 0;

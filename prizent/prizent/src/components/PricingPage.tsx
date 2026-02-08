@@ -1,13 +1,49 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PricingPage.css';
 
 const PricingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedParentCategory, setSelectedParentCategory] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [selectedMarketplace, setSelectedMarketplace] = useState('');
+
+  const handleGetProductDetails = () => {
+    if (selectedProduct) {
+      navigate('/product-details', {
+        state: {
+          brand: selectedBrand,
+          product: selectedProduct,
+          parentCategory: selectedParentCategory,
+          category: selectedCategory,
+          subCategory: selectedSubCategory,
+          marketplace: selectedMarketplace
+        }
+      });
+    } else {
+      alert('Please select a Product before viewing details.');
+    }
+  };
+
+  const handleCalculatePrice = () => {
+    if (selectedProduct && selectedMarketplace) {
+      navigate('/price-calculator', {
+        state: {
+          brand: selectedBrand,
+          product: selectedProduct,
+          parentCategory: selectedParentCategory,
+          category: selectedCategory,
+          subCategory: selectedSubCategory,
+          marketplace: selectedMarketplace
+        }
+      });
+    } else {
+      alert('Please select at least a Product and Marketplace before calculating price.');
+    }
+  };
 
   const marketplaceData = [
     { marketplace: 'Amazon', avgSellingPrice: '₹999', avgCost: '₹670', avgProfit: '₹329', margin: '33%' },
@@ -143,8 +179,8 @@ const PricingPage: React.FC = () => {
           </div>
 
           <div className="action-buttons">
-            <button className="btn-secondary">Get Product Details</button>
-            <button className="btn-primary">Calculate Price</button>
+            <button className="btn-secondary" onClick={handleGetProductDetails}>Get Product Details</button>
+            <button className="btn-primary" onClick={handleCalculatePrice}>Calculate Price</button>
           </div>
         </section>
 

@@ -9,24 +9,30 @@ const marketplaces = [
   { name: "Ajio", mapping: "Mapped", costSlab: "0–799, 800–1499", commission: "20%", status: "Active" },
   { name: "Meesho", mapping: "Mapped", costSlab: "0–499", commission: "10%", status: "Active" },
   { name: "Nykaa Fashion", mapping: "Mapped", costSlab: "1500–2999", commission: "25%", status: "Active" },
-  { name: "Snapdeal", mapping: "Partial", costSlab: "0–599, 600–1200", commission: "12%", status: "Active" },
-  { name: "Shopclues", mapping: "Mapped", costSlab: "0–399, 400–999", commission: "8%", status: "Inactive" },
-  { name: "Tata Cliq", mapping: "Mapped", costSlab: "1000–2999, 3000+", commission: "19%", status: "Active" },
-  { name: "Pepperfry", mapping: "Partial", costSlab: "2000–5000, 5000+", commission: "17%", status: "Active" },
-  { name: "FirstCry", mapping: "Mapped", costSlab: "0–499, 500–1499", commission: "14%", status: "Active" },
-  { name: "Limeroad", mapping: "Partial", costSlab: "0–999, 1000–1999", commission: "16%", status: "Inactive" },
-  { name: "Shopsy", mapping: "Mapped", costSlab: "0–299, 300–799", commission: "11%", status: "Active" },
-  { name: "Jiomart", mapping: "Mapped", costSlab: "0–699, 700–1999", commission: "13%", status: "Active" },
-  { name: "PaytmMall", mapping: "Partial", costSlab: "0–999, 1000–2499", commission: "15%", status: "Inactive" },
-  { name: "Urban Ladder", mapping: "Mapped", costSlab: "3000–10000, 10000+", commission: "21%", status: "Active" },
-  { name: "Zivame", mapping: "Mapped", costSlab: "500–1499, 1500+", commission: "23%", status: "Active" },
-  { name: "Bewakoof", mapping: "Partial", costSlab: "0–699, 700–1299", commission: "17%", status: "Active" },
+  { name: "Snapdeal", mapping: "Partial", costSlab: "0–599, 600–1199", commission: "12%", status: "Active" },
+  { name: "Tata CLiQ", mapping: "Mapped", costSlab: "500–1499, 1500+", commission: "19%", status: "Active" },
+  { name: "FirstCry", mapping: "Mapped", costSlab: "0–399, 400–799", commission: "16%", status: "Active" },
+  { name: "Shoppers Stop", mapping: "Partial", costSlab: "1000–2499, 2500+", commission: "23%", status: "Inactive" },
+  { name: "Lifestyle", mapping: "Mapped", costSlab: "800–1999, 2000+", commission: "21%", status: "Active" },
+  { name: "Limeroad", mapping: "Partial", costSlab: "0–499, 500–999", commission: "14%", status: "Active" },
+  { name: "Paytm Mall", mapping: "Mapped", costSlab: "0–599, 600–1199", commission: "17%", status: "Inactive" },
+  { name: "ShopClues", mapping: "Partial", costSlab: "0–399, 400–799", commission: "11%", status: "Active" },
+  { name: "Jabong", mapping: "Mapped", costSlab: "999–1999, 2000+", commission: "20%", status: "Active" },
+  { name: "Koovs", mapping: "Partial", costSlab: "500–1499, 1500+", commission: "22%", status: "Inactive" },
+  { name: "Craftsvilla", mapping: "Mapped", costSlab: "0–699, 700–1399", commission: "13%", status: "Active" },
+  { name: "Zivame", mapping: "Mapped", costSlab: "400–999, 1000+", commission: "24%", status: "Active" },
+  { name: "Bewakoof", mapping: "Partial", costSlab: "0–499, 500–999", commission: "15%", status: "Active" },
+  { name: "Clovia", mapping: "Mapped", costSlab: "300–799, 800+", commission: "26%", status: "Active" },
+  { name: "FabIndia", mapping: "Mapped", costSlab: "700–1999, 2000+", commission: "18%", status: "Active" },
+  { name: "Fynd", mapping: "Partial", costSlab: "500–1499, 1500+", commission: "19%", status: "Inactive" },
+  { name: "Pernia's Pop-Up Shop", mapping: "Mapped", costSlab: "2000–4999, 5000+", commission: "28%", status: "Active" },
+  { name: "Caratlane", mapping: "Mapped", costSlab: "5000–14999, 15000+", commission: "12%", status: "Active" },
 ];
 
 const MarketplacesListPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [itemsPerPage] = useState(8);
 
   // Calculate pagination
   const totalPages = Math.ceil(marketplaces.length / itemsPerPage);
@@ -34,82 +40,42 @@ const MarketplacesListPage: React.FC = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentMarketplaces = marketplaces.slice(startIndex, endIndex);
 
-  const handlePageChange = (page: number) => {
+  // Pagination handlers
+  const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
+  const goToPrevious = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages are less than or equal to max visible
+  const goToNext = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(
-          <span
-            key={i}
-            className={currentPage === i ? "page-current" : "page"}
-            onClick={() => handlePageChange(i)}
-            style={{ cursor: 'pointer' }}
-          >
-            {i}
-          </span>
-        );
+        pages.push(i);
       }
     } else {
-      // Show first page
-      pageNumbers.push(
-        <span
-          key={1}
-          className={currentPage === 1 ? "page-current" : "page"}
-          onClick={() => handlePageChange(1)}
-          style={{ cursor: 'pointer' }}
-        >
-          1
-        </span>
-      );
-
-      if (currentPage > 3) {
-        pageNumbers.push(<span key="dots1" className="page-dots">......</span>);
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 5);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2);
       }
-
-      // Show pages around current page
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(
-          <span
-            key={i}
-            className={currentPage === i ? "page-current" : "page"}
-            onClick={() => handlePageChange(i)}
-            style={{ cursor: 'pointer' }}
-          >
-            {i}
-          </span>
-        );
-      }
-
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push(<span key="dots2" className="page-dots">......</span>);
-      }
-
-      // Show last page
-      pageNumbers.push(
-        <span
-          key={totalPages}
-          className={currentPage === totalPages ? "page-current" : "page"}
-          onClick={() => handlePageChange(totalPages)}
-          style={{ cursor: 'pointer' }}
-        >
-          {totalPages}
-        </span>
-      );
     }
-
-    return pageNumbers;
+    return pages;
   };
 
   return (
@@ -200,16 +166,28 @@ const MarketplacesListPage: React.FC = () => {
             </div>
             <div className="page-numbers">
               <span 
-                className="page-prev" 
-                onClick={() => handlePageChange(currentPage - 1)}
+                className={`page-prev ${currentPage === 1 ? 'disabled' : ''}`}
+                onClick={goToPrevious}
                 style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
               >
                 &lt;
               </span>
-              {renderPageNumbers()}
+              {getPageNumbers().map((page, index) => (
+                <span
+                  key={index}
+                  className={page === currentPage ? 'page-current' : 'page'}
+                  onClick={() => goToPage(page)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {page}
+                </span>
+              ))}
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <span className="page-dots">......</span>
+              )}
               <span 
-                className="page-next" 
-                onClick={() => handlePageChange(currentPage + 1)}
+                className={`page-next ${currentPage === totalPages ? 'disabled' : ''}`}
+                onClick={goToNext}
                 style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
               >
                 &gt;
