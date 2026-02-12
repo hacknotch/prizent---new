@@ -49,7 +49,7 @@ const userService = {
     console.log('Client ID:', clientId);
     
     try {
-      const response = await apiClient.get(`/admin/users?clientId=${clientId}`);
+      const response = await apiClient.get(`admin/users?clientId=${clientId}`);
       console.log('✓ Users retrieved:', response.data);
       return response.data;
     } catch (error: any) {
@@ -64,7 +64,7 @@ const userService = {
     console.log('User ID:', userId);
     
     try {
-      const response = await apiClient.get(`/admin/users/${userId}`);
+      const response = await apiClient.get(`admin/users/${userId}`);
       console.log('✓ User retrieved:', response.data);
       return response.data;
     } catch (error: any) {
@@ -80,7 +80,7 @@ const userService = {
     console.log('Client ID:', clientId);
     
     try {
-      const response = await apiClient.post(`/admin/users?clientId=${clientId}`, request);
+      const response = await apiClient.post(`admin/users?clientId=${clientId}`, request);
       console.log('✓ User created:', response.data);
       return response.data;
     } catch (error: any) {
@@ -96,7 +96,7 @@ const userService = {
     console.log('Request:', request);
     
     try {
-      const response = await apiClient.put(`/admin/users/${userId}`, request);
+      const response = await apiClient.put(`admin/users/${userId}`, request);
       console.log('✓ User updated:', response.data);
       return response.data;
     } catch (error: any) {
@@ -111,7 +111,7 @@ const userService = {
     console.log('User ID:', userId);
     
     try {
-      const response = await apiClient.patch(`/admin/users/${userId}/enable`);
+      const response = await apiClient.patch(`admin/users/${userId}/enable`);
       console.log('✓ User enabled:', response.data);
       return response.data;
     } catch (error: any) {
@@ -126,7 +126,7 @@ const userService = {
     console.log('User ID:', userId);
     
     try {
-      const response = await apiClient.patch(`/admin/users/${userId}/disable`);
+      const response = await apiClient.patch(`admin/users/${userId}/disable`);
       console.log('✓ User disabled:', response.data);
       return response.data;
     } catch (error: any) {
@@ -141,7 +141,7 @@ const userService = {
     console.log('User ID:', userId);
     
     try {
-      const response = await apiClient.delete(`/admin/users/${userId}`);
+      const response = await apiClient.delete(`admin/users/${userId}`);
       console.log('✓ User deleted:', response.data);
       return response.data;
     } catch (error: any) {

@@ -39,7 +39,7 @@ const brandService = {
     console.log('=== BRAND SERVICE GET ALL BRANDS ===');
     
     try {
-      const response = await apiClient.get('/admin/brands');
+      const response = await apiClient.get('admin/brands');
       console.log('✓ Brands retrieved:', response.data);
       return response.data;
     } catch (error: any) {
@@ -54,7 +54,7 @@ const brandService = {
     console.log('Brand ID:', brandId);
     
     try {
-      const response = await apiClient.get(`/admin/brands/${brandId}`);
+      const response = await apiClient.get(`admin/brands/${brandId}`);
       console.log('✓ Brand retrieved:', response.data);
       return response.data;
     } catch (error: any) {
@@ -69,7 +69,7 @@ const brandService = {
     console.log('Request:', request);
     
     try {
-      const response = await apiClient.post('/admin/brands', request);
+      const response = await apiClient.post('admin/brands', request);
       console.log('✓ Brand created:', response.data);
       return response.data;
     } catch (error: any) {
@@ -85,7 +85,7 @@ const brandService = {
     console.log('Request:', request);
     
     try {
-      const response = await apiClient.put(`/admin/brands/${brandId}`, request);
+      const response = await apiClient.put(`admin/brands/${brandId}`, request);
       console.log('✓ Brand updated:', response.data);
       return response.data;
     } catch (error: any) {
@@ -100,7 +100,7 @@ const brandService = {
     console.log('Brand ID:', brandId);
     
     try {
-      const response = await apiClient.delete(`/admin/brands/${brandId}`);
+      const response = await apiClient.delete(`admin/brands/${brandId}`);
       console.log('✓ Brand deleted:', response.data);
       return response.data;
     } catch (error: any) {

@@ -1,34 +1,30 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
-  console.log('[SetupProxy] Configuring proxy middleware...');
-  
+  // Route ALL /api requests through the API Gateway (port 8080)
+  // IMPORTANT: Use pathFilter instead of Express mount path to preserve the /api prefix.
+  // Express mount path (app.use('/api', proxy)) strips the /api prefix before forwarding,
+  // but the API Gateway routes expect paths like /api/auth/**, /api/admin/**, etc.
   app.use(
-    '/api',
     createProxyMiddleware({
       target: 'http://localhost:8080',
+      pathFilter: '/api',
       changeOrigin: true,
       secure: false,
-      logLevel: 'debug',
-      pathRewrite: function (path, req) {
-        // The middleware strips /api, so we need to add it back
-        const newPath = '/api' + path;
-        console.log('[Proxy] Rewriting path:', path, '->', newPath);
-        return newPath;
-      },
-      onProxyReq: (proxyReq, req, res) => {
-        console.log('[Proxy] Proxying:', req.method, req.originalUrl);
-      },
-      onProxyRes: (proxyRes, req, res) => {
-        console.log('[Proxy] Response:', proxyRes.statusCode, req.originalUrl);
-      },
-      onError: (err, req, res) => {
-        console.error('[Proxy] Error:', err.message);
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('Proxy error: ' + err.message);
+      ws: true,
+      logger: console,
+      on: {
+        proxyReq: function(proxyReq, req, res) {
+          console.log('[Proxy] Forwarding:', req.method, req.originalUrl, '-> http://localhost:8080' + req.originalUrl);
+        },
+        error: function(err, req, res) {
+          console.error('[Proxy] Error:', err.message);
+          res.writeHead(500, {
+            'Content-Type': 'application/json',
+          });
+          res.end(JSON.stringify({ error: 'Proxy error: ' + err.message }));
+        }
       }
     })
   );
-  
-  console.log('[SetupProxy] Proxy middleware configured successfully');
 };

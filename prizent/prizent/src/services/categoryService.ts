@@ -42,25 +42,25 @@ export interface CategoryResponse {
 const categoryService = {
   // Get all categories (flat list)
   getAllCategories: async (): Promise<CategoryResponse> => {
-    const response = await apiClient.get('/admin/categories');
+    const response = await apiClient.get('admin/categories');
     return response.data;
   },
 
   // Get category tree (hierarchical structure)
   getCategoryTree: async (): Promise<CategoryResponse> => {
-    const response = await apiClient.get('/admin/categories/tree');
+    const response = await apiClient.get('admin/categories/tree');
     return response.data;
   },
 
   // Get single category by ID
   getCategoryById: async (categoryId: number): Promise<CategoryResponse> => {
-    const response = await apiClient.get(`/admin/categories/${categoryId}`);
+    const response = await apiClient.get(`admin/categories/${categoryId}`);
     return response.data;
   },
 
   // Create new category
   createCategory: async (data: CreateCategoryRequest): Promise<CategoryResponse> => {
-    const response = await apiClient.post('/admin/categories', data);
+    const response = await apiClient.post('admin/categories', data);
     return response.data;
   },
 
@@ -69,25 +69,25 @@ const categoryService = {
     categoryId: number,
     data: UpdateCategoryRequest
   ): Promise<CategoryResponse> => {
-    const response = await apiClient.put(`/admin/categories/${categoryId}`, data);
+    const response = await apiClient.put(`admin/categories/${categoryId}`, data);
     return response.data;
   },
 
   // Enable category
   enableCategory: async (categoryId: number): Promise<CategoryResponse> => {
-    const response = await apiClient.patch(`/admin/categories/${categoryId}/enable`);
+    const response = await apiClient.patch(`admin/categories/${categoryId}/enable`);
     return response.data;
   },
 
   // Disable category
   disableCategory: async (categoryId: number): Promise<CategoryResponse> => {
-    const response = await apiClient.patch(`/admin/categories/${categoryId}/disable`);
+    const response = await apiClient.patch(`admin/categories/${categoryId}/disable`);
     return response.data;
   },
 
   // Delete category
   deleteCategory: async (categoryId: number): Promise<CategoryResponse> => {
-    const response = await apiClient.delete(`/admin/categories/${categoryId}`);
+    const response = await apiClient.delete(`admin/categories/${categoryId}`);
     return response.data;
   },
 };

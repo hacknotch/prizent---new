@@ -23,6 +23,7 @@ const authService = {
     console.log('=== AUTH SERVICE LOGIN START ===');
     console.log('authService.login called with username:', username);
     console.log('Password length:', password.length);
+    console.log('Request URL will be: /api/auth/login');
     
     const requestBody = {
       username,
@@ -31,8 +32,8 @@ const authService = {
     console.log('Request body:', requestBody);
     
     try {
-      console.log('Making POST request to /auth/login...');
-      const response = await apiClient.post('/auth/login', requestBody);
+      console.log('Making POST request to auth/login...');
+      const response = await apiClient.post('auth/login', requestBody);
       
       console.log('✓ Response received!');
       console.log('Response status:', response.status);
@@ -53,11 +54,19 @@ const authService = {
       console.error('=== AUTH SERVICE LOGIN ERROR ===');
       console.error('Error object:', error);
       console.error('Error message:', error.message);
-      console.error('Error response:', error.response);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
       console.error('Error request:', error.request);
       console.error('Error config:', error.config);
       console.error('=== AUTH SERVICE LOGIN END (ERROR) ===');
-      throw error;
+      
+      // Return a proper error response instead of throwing
+      const errorMessage = error.response?.data?.message || error.message || 'Network error occurred';
+      return {
+        success: false,
+        message: errorMessage
+      };
     }
   },
 
@@ -69,9 +78,9 @@ const authService = {
       console.log('Token exists:', !!token);
       if (token) {
         console.log('Token preview:', token.substring(0, 20) + '...');
-        console.log('Making POST request to /auth/logout...');
+        console.log('Making POST request to auth/logout...');
         // Call backend logout endpoint - Authorization header will be added by interceptor
-        const response = await apiClient.post('/auth/logout', {});
+        const response = await apiClient.post('auth/logout', {});
         console.log('✓ Backend logout successful');
         console.log('Response:', response.data);
       } else {

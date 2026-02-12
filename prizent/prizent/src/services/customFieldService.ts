@@ -56,9 +56,8 @@ export interface CustomFieldValueResponse {
  */
 export const createCustomField = async (request: CreateCustomFieldRequest): Promise<CustomFieldResponse> => {
   try {
-    const response = await apiClient.post('/admin/custom-fields', request);
-    // Backend returns { success: true, customField: {...} }
-    return response.data.customField || response.data;
+    const response = await apiClient.post('admin/custom-fields', request);
+    return response.data;
   } catch (error) {
     console.error('Error creating custom field:', error);
     throw error;
@@ -70,22 +69,9 @@ export const createCustomField = async (request: CreateCustomFieldRequest): Prom
  */
 export const getCustomFields = async (module?: string): Promise<CustomFieldResponse[]> => {
   try {
-    // If no module specified, get all fields by querying each module
-    if (!module) {
-      const modules = ['p', 'c', 'm', 'b']; // products, categories, marketplaces, brands
-      const allFieldsPromises = modules.map(m => 
-        apiClient.get(`/admin/custom-fields?module=${m}`)
-          .then(res => res.data.customFields || [])
-          .catch(() => [])
-      );
-      const allFieldsArrays = await Promise.all(allFieldsPromises);
-      const allFields = allFieldsArrays.flat();
-      return allFields;
-    }
-    
-    const response = await apiClient.get(`/admin/custom-fields?module=${module}`);
-    // Backend returns { success: true, customFields: [...] }
-    return response.data.customFields || [];
+    const url = module ? `/admin/custom-fields?module=${module}` : '/admin/custom-fields';
+    const response = await apiClient.get(url);
+    return response.data;
   } catch (error) {
     console.error('Error fetching custom fields:', error);
     throw error;
@@ -97,9 +83,8 @@ export const getCustomFields = async (module?: string): Promise<CustomFieldRespo
  */
 export const getCustomFieldById = async (fieldId: number): Promise<CustomFieldResponse> => {
   try {
-    const response = await apiClient.get(`/admin/custom-fields/${fieldId}`);
-    // Backend returns { success: true, customField: {...} }
-    return response.data.customField || response.data;
+    const response = await apiClient.get(`admin/custom-fields/${fieldId}`);
+    return response.data;
   } catch (error) {
     console.error(`Error fetching custom field ${fieldId}:`, error);
     throw error;
@@ -114,9 +99,8 @@ export const updateCustomField = async (
   request: UpdateCustomFieldRequest
 ): Promise<CustomFieldResponse> => {
   try {
-    const response = await apiClient.put(`/admin/custom-fields/${fieldId}`, request);
-    // Backend returns { success: true, customField: {...} }
-    return response.data.customField || response.data;
+    const response = await apiClient.put(`admin/custom-fields/${fieldId}`, request);
+    return response.data;
   } catch (error) {
     console.error(`Error updating custom field ${fieldId}:`, error);
     throw error;
@@ -128,9 +112,8 @@ export const updateCustomField = async (
  */
 export const toggleCustomField = async (fieldId: number, enabled: boolean): Promise<CustomFieldResponse> => {
   try {
-    const response = await apiClient.patch(`/admin/custom-fields/${fieldId}/enable?enabled=${enabled}`);
-    // Backend returns { success: true, customField: {...} }
-    return response.data.customField || response.data;
+    const response = await apiClient.patch(`admin/custom-fields/${fieldId}/enable?enabled=${enabled}`);
+    return response.data;
   } catch (error) {
     console.error(`Error toggling custom field ${fieldId}:`, error);
     throw error;
@@ -142,7 +125,7 @@ export const toggleCustomField = async (fieldId: number, enabled: boolean): Prom
  */
 export const deleteCustomField = async (fieldId: number): Promise<void> => {
   try {
-    await apiClient.delete(`/admin/custom-fields/${fieldId}`);
+    await apiClient.delete(`admin/custom-fields/${fieldId}`);
   } catch (error) {
     console.error(`Error deleting custom field ${fieldId}:`, error);
     throw error;
@@ -158,7 +141,7 @@ export const deleteCustomField = async (fieldId: number): Promise<void> => {
  */
 export const saveCustomFieldValue = async (request: SaveCustomFieldValueRequest): Promise<CustomFieldValueResponse> => {
   try {
-    const response = await apiClient.post('/admin/custom-fields/values', request);
+    const response = await apiClient.post('admin/custom-fields/values', request);
     return response.data;
   } catch (error) {
     console.error('Error saving custom field value:', error);
@@ -174,7 +157,7 @@ export const getCustomFieldValues = async (
   moduleId: number
 ): Promise<CustomFieldValueResponse[]> => {
   try {
-    const response = await apiClient.get(`/admin/custom-fields/values?module=${module}&moduleId=${moduleId}`);
+    const response = await apiClient.get(`admin/custom-fields/values?module=${module}&moduleId=${moduleId}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching custom field values for ${module}:${moduleId}:`, error);
@@ -191,7 +174,7 @@ export const getCustomFieldValues = async (
  */
 export const getBrandCustomFields = async (): Promise<CustomFieldResponse[]> => {
   try {
-    const response = await apiClient.get('/admin/custom-fields/brands');
+    const response = await apiClient.get('admin/custom-fields/brands');
     return response.data;
   } catch (error) {
     console.error('Error fetching brand custom fields:', error);
@@ -204,7 +187,7 @@ export const getBrandCustomFields = async (): Promise<CustomFieldResponse[]> => 
  */
 export const getBrandCustomFieldValues = async (brandId: number): Promise<CustomFieldValueResponse[]> => {
   try {
-    const response = await apiClient.get(`/admin/custom-fields/brands/${brandId}/values`);
+    const response = await apiClient.get(`admin/custom-fields/brands/${brandId}/values`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching custom field values for brand ${brandId}:`, error);
