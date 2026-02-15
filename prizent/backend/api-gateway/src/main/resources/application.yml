@@ -45,6 +45,12 @@ spring:
             - Path=/api/admin/categories/**
           filters:
             - PreserveHostHeader
+        - id: admin-service-marketplaces
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/admin/marketplaces/**
+          filters:
+            - PreserveHostHeader
         - id: admin-service-custom-fields
           uri: http://localhost:8082
           predicates:
@@ -55,6 +61,12 @@ spring:
           uri: http://localhost:8082
           predicates:
             - Path=/api/admin/attributes/**
+          filters:
+            - PreserveHostHeader
+        - id: admin-service-products
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/admin/products/**
           filters:
             - PreserveHostHeader
         - id: product-service
