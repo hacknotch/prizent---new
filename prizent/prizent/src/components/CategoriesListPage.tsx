@@ -216,6 +216,9 @@ const CategoriesListPage: React.FC = () => {
                 <th>Category</th>
                 <th>Sub-Category</th>
                 <th>Attributes</th>
+                {categoryCustomFields.filter(f => f.enabled).map((field) => (
+                  <th key={field.id}>{field.name}</th>
+                ))}
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -228,6 +231,10 @@ const CategoriesListPage: React.FC = () => {
                   <td>{category.category}</td>
                   <td>{category.subCategory}</td>
                   <td>{category.attributes}</td>
+                  {categoryCustomFields.filter(f => f.enabled).map((field) => {
+                    const fieldValue = categoryFieldValues.get(category.id)?.find(v => v.customFieldId === field.id);
+                    return <td key={field.id}>{fieldValue?.value || '-'}</td>;
+                  })}
                   <td>
                     <button 
                       className={'status-badge ' + category.status.toLowerCase()}
@@ -263,7 +270,7 @@ const CategoriesListPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <td colSpan={6 + categoryCustomFields.filter(f => f.enabled).length} style={{ textAlign: 'center', padding: '2rem' }}>
                     No categories found. Click "ADD CATEGORY" to create one.
                   </td>
                 </tr>

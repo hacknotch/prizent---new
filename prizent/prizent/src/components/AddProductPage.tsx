@@ -4,6 +4,7 @@ import './AddProductPage.css';
 import productService, { CreateProductRequest } from '../services/productService';
 import { useCategories } from '../contexts/CategoryContext';
 import brandService, { Brand } from '../services/brandService';
+import { getCustomFields, saveCustomFieldValue, CustomFieldResponse } from '../services/customFieldService';
 
 const AddProductPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const AddProductPage: React.FC = () => {
   const [status, setStatus] = useState('Active');
   const [subCategory, setSubCategory] = useState('');
   const [attributes, setAttributes] = useState('');
+  const [customFields, setCustomFields] = useState<CustomFieldResponse[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<{ [key: number]: string }>({});
 
   // Fetch brands on component mount
   useEffect(() => {
@@ -40,6 +43,21 @@ const AddProductPage: React.FC = () => {
     };
 
     fetchBrands();
+  }, []);
+
+  // Fetch custom fields for products
+  useEffect(() => {
+    const fetchCustomFields = async () => {
+      try {
+        const fields = await getCustomFields('p');
+        const enabledFields = fields.filter(f => f.enabled);
+        setCustomFields(enabledFields);
+        console.log('Loaded product custom fields:', enabledFields);
+      } catch (error) {
+        console.error('Failed to fetch custom fields:', error);
+      }
+    };
+    fetchCustomFields();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -71,6 +89,27 @@ const AddProductPage: React.FC = () => {
       setLoading(true);
       const response = await productService.createProduct(formData);
       console.log('Product created:', response);
+
+      // Save custom field values
+      if (response.id) {
+        await Promise.all(
+          Object.entries(customFieldValues).map(async ([fieldId, value]) => {
+            if (value && value.trim()) {
+              try {
+                await saveCustomFieldValue({
+                  customFieldId: Number(fieldId),
+                  module: 'p',
+                  moduleId: response.id,
+                  value: value.trim()
+                });
+              } catch (err) {
+                console.error(`Failed to save custom field ${fieldId}:`, err);
+              }
+            }
+          })
+        );
+      }
+
       alert('Product created successfully!');
       navigate('/products');
     } catch (error: any) {
@@ -299,6 +338,54 @@ const AddProductPage: React.FC = () => {
           </section>
         </div>
       </div>
+
+      {/* Custom Fields Section */}
+      {customFields.length > 0 && (
+        <div className="main-content-grid" style={{ marginTop: '32px' }}>
+          <section className="pricing-attributes-section" style={{ gridColumn: '1 / -1' }}>
+            <h2 className="section-title">Custom Fields</h2>
+            <div className="pricing-card" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+              {customFields.map((field) => (
+                <div key={field.id}>
+                  {field.fieldType === 'text' || field.fieldType === 'numeric' ? (
+                    <input 
+                      type={field.fieldType === 'numeric' ? 'number' : 'text'}
+                      placeholder={field.name}
+                      className="form-input"
+                      value={customFieldValues[field.id] || ''}
+                      onChange={(e) => setCustomFieldValues(prev => ({
+                        ...prev,
+                        [field.id]: e.target.value
+                      }))}
+                      required={field.required}
+                    />
+                  ) : field.fieldType === 'dropdown' && field.dropdownOptions ? (
+                    <div className="form-input-with-dropdown">
+                      <select 
+                        className="form-select"
+                        value={customFieldValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldValues(prev => ({
+                          ...prev,
+                          [field.id]: e.target.value
+                        }))}
+                        required={field.required}
+                      >
+                        <option value="">{field.name}</option>
+                        {field.dropdownOptions.split(',').map((opt, idx) => (
+                          <option key={idx} value={opt.trim()}>{opt.trim()}</option>
+                        ))}
+                      </select>
+                      <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
+                        <path d="M0 0L5 5L10 0H0Z" fill="#1E1E1E"/>
+                      </svg>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="action-buttons">

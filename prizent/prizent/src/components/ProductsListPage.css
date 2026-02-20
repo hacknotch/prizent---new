@@ -131,20 +131,23 @@
   border: 0.5px solid #DCDADA;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.03);
   border-radius: 13px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .products-table {
   width: 100%;
+  min-width: fit-content;
 }
 
 .products-table-row {
   display: grid;
-  grid-template-columns: minmax(420px, 700px) minmax(160px, 240px) minmax(160px, 240px) minmax(110px, 200px) minmax(140px, 220px) minmax(150px, 200px);
+  grid-template-columns: minmax(420px, 700px) minmax(160px, 240px) minmax(160px, 240px) minmax(110px, 200px) repeat(auto-fit, minmax(150px, 1fr)) minmax(140px, 220px) minmax(150px, 200px);
   column-gap: 0px;
   align-items: center;
   padding: 12px 20px;
   border-bottom: 0.5px solid #E4E4E4;
+  min-width: max-content;
 }
 
 .products-table-header {

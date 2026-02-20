@@ -421,11 +421,14 @@
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.03);
   border-radius: 13px;
   padding: 25px;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .categories-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: fit-content;
 }
 
 .categories-table thead th {

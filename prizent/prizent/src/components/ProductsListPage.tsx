@@ -143,6 +143,9 @@ const ProductsListPage: React.FC = () => {
               <div>SKU Code</div>
               <div>Category</div>
               <div>Units</div>
+              {customFields.map((field) => (
+                <div key={field.id}>{field.name}</div>
+              ))}
               <div>Status</div>
               <div>Actions</div>
             </div>
@@ -186,6 +189,9 @@ const ProductsListPage: React.FC = () => {
                   <div>{product.skuCode}</div>
                   <div>Category {product.categoryId}</div> {/* Will be replaced with actual category name later */}
                   <div>-</div> {/* Units not available in backend model yet */}
+                  {customFields.map((field) => (
+                    <div key={field.id}>{getFieldValue(field.id)}</div>
+                  ))}
                   <div>
                     <span className={`product-status ${getProductStatusDisplay(product.currentType).toLowerCase().replace(/\s/g, '-')}`}>
                       {getProductStatusDisplay(product.currentType)}

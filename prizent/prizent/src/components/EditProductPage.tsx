@@ -4,6 +4,7 @@ import './EditProductPage.css';
 import productService, { UpdateProductRequest } from '../services/productService';
 import { useCategories } from '../contexts/CategoryContext';
 import brandService, { Brand } from '../services/brandService';
+import { getCustomFields, saveCustomFieldValue, getCustomFieldValues, CustomFieldResponse } from '../services/customFieldService';
 
 const EditProductPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ const EditProductPage: React.FC = () => {
   const [status, setStatus] = useState('Active');
   const [subCategory, setSubCategory] = useState('');
   const [attributes, setAttributes] = useState('');
+  const [customFields, setCustomFields] = useState<CustomFieldResponse[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<{ [key: number]: string }>({});
 
   // Fetch brands on component mount
   useEffect(() => {
@@ -42,6 +45,21 @@ const EditProductPage: React.FC = () => {
     };
 
     fetchBrands();
+  }, []);
+
+  // Fetch custom fields for products
+  useEffect(() => {
+    const fetchCustomFields = async () => {
+      try {
+        const fields = await getCustomFields('p');
+        const enabledFields = fields.filter(f => f.enabled);
+        setCustomFields(enabledFields);
+        console.log('Loaded product custom fields:', enabledFields);
+      } catch (error) {
+        console.error('Failed to fetch custom fields:', error);
+      }
+    };
+    fetchCustomFields();
   }, []);
 
   // Fetch product data
@@ -64,6 +82,19 @@ const EditProductPage: React.FC = () => {
           proposedSellingPriceNonSales: product.proposedSellingPriceNonSales || 0,
           currentType: product.currentType || 'A'
         });
+
+        // Load custom field values
+        try {
+          const fieldValues = await getCustomFieldValues('p', Number(id));
+          const valuesMap: { [key: number]: string } = {};
+          fieldValues.forEach(fv => {
+            valuesMap[fv.customFieldId] = fv.value;
+          });
+          setCustomFieldValues(valuesMap);
+          console.log('Loaded custom field values:', valuesMap);
+        } catch (error) {
+          console.error('Failed to load custom field values:', error);
+        }
 
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -110,6 +141,28 @@ const EditProductPage: React.FC = () => {
       setLoading(true);
       const response = await productService.updateProduct(Number(id), formData);
       console.log('Product updated:', response);
+
+      // Save custom field values
+      try {
+        await Promise.all(
+          Object.entries(customFieldValues).map(async ([fieldId, value]) => {
+            const trimmedValue = value.trim();
+            if (trimmedValue) {
+              await saveCustomFieldValue({
+                customFieldId: Number(fieldId),
+                module: 'p',
+                moduleId: Number(id),
+                value: trimmedValue
+              });
+            }
+          })
+        );
+        console.log('Custom field values saved');
+      } catch (fieldError) {
+        console.error('Error saving custom field values:', fieldError);
+        // Continue with success message even if custom fields fail
+      }
+
       alert('Product updated successfully!');
       navigate('/products');
     } catch (error: any) {
@@ -346,6 +399,59 @@ const EditProductPage: React.FC = () => {
               />
             </div>
           </section>
+
+          {/* Custom Fields Section */}
+          {customFields.length > 0 && (
+            <section className="pricing-attributes-section" style={{ gridColumn: '1 / -1', marginTop: '32px' }}>
+              <h2 className="section-title">Custom Fields</h2>
+              <div className="pricing-card" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+                {customFields.map((field) => (
+                  <div key={field.id}>
+                    {field.fieldType === 'text' && (
+                      <input
+                        type="text"
+                        placeholder={field.name + (field.required ? ' *' : '')}
+                        className="form-input"
+                        value={customFieldValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
+                        required={field.required}
+                      />
+                    )}
+                    {field.fieldType === 'numeric' && (
+                      <input
+                        type="number"
+                        placeholder={field.name + (field.required ? ' *' : '')}
+                        className="form-input"
+                        value={customFieldValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
+                        required={field.required}
+                      />
+                    )}
+                    {field.fieldType === 'dropdown' && (
+                      <div style={{ position: 'relative' }}>
+                        <select
+                          className="form-select"
+                          value={customFieldValues[field.id] || ''}
+                          onChange={(e) => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
+                          required={field.required}
+                        >
+                          <option value="">{field.name + (field.required ? ' *' : '')}</option>
+                          {field.dropdownOptions?.split(',').map((option: string, idx: number) => (
+                            <option key={idx} value={option.trim()}>
+                              {option.trim()}
+                            </option>
+                          ))}
+                        </select>
+                        <svg width="10" height="5" viewBox="0 0 10 5" fill="none" style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                          <path d="M0 0L5 5L10 0H0Z" fill="#1E1E1E"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
 
