@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategories } from '../contexts/CategoryContext';
-import './AddCategoryPage.css'; // Reusing the same styles
+import './EditCategoryPage.css';
 
 const EditCategoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const EditCategoryPage: React.FC = () => {
   }
 
   return (
-    <div className="add-category-page">
+    <div className="edit-category-page">
       {/* Main Content */}
       <main className="main-content">
         {/* Header */}

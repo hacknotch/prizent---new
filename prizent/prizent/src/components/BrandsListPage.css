@@ -278,7 +278,7 @@
   border: 0.5px solid #DCDADA;
   border-radius: 13px;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.03);
-  padding: 25px 30px 30px 30px;
+  padding: 15px 30px 30px 30px;
   min-height: 600px;
   margin-left: 0px;
 }
@@ -294,7 +294,7 @@
   font-weight: 500;
   color: #1A1A1A;
   text-align: left;
-  padding-bottom: 22px;
+  padding-bottom: 12px;
   border-bottom: 0.75px solid #E4E4E4;
 }
 
@@ -312,10 +312,12 @@
 
 .brands-table thead th:nth-child(4) {
   width: 100px;
+  padding-right: 0 !important;
 }
 
 .brands-table thead th:last-child {
   width: 100px;
+  padding-left: 0 !important;
 }
 
 .brands-table tbody tr {
@@ -332,6 +334,16 @@
   font-size: 16px;
   font-weight: 400;
   color: #454545;
+}
+
+.brands-table tbody td:nth-child(4) {
+  padding-right: 0 !important;
+}
+
+.brands-table tbody td:nth-child(5) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  text-align: left;
 }
 
 .brand-logo {
@@ -385,27 +397,30 @@
 }
 
 /* Action Buttons */
-.action-buttons {
+.brands-table .action-buttons {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
-.action-btn {
+.brands-table .action-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s;
+  width: 20px;
+  height: 20px;
 }
 
-.action-btn:hover {
+.brands-table .action-btn:hover {
   opacity: 0.7;
 }
 
-.action-btn svg {
+.brands-table .action-btn svg {
   width: 16px;
   height: 16px;
 }
@@ -742,7 +757,7 @@
   }
   
   .brands-page .action-buttons {
-    justify-content: flex-start;
+    gap: 8px;
     margin-top: 10px;
   }
   
@@ -870,9 +885,8 @@
   }
   
   .brands-page .action-buttons {
-    justify-content: flex-start;
-    margin-top: 8px;
     gap: 8px;
+    margin-top: 8px;
   }
   
   .brands-page .action-btn {
@@ -1006,9 +1020,8 @@
   }
   
   .brands-page .action-buttons {
-    justify-content: flex-start;
-    margin-top: 6px;
     gap: 6px;
+    margin-top: 6px;
   }
   
   .brands-page .action-btn {
