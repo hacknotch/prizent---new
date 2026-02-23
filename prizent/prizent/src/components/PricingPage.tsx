@@ -4,58 +4,49 @@ import './PricingPage.css';
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedParentCategory, setSelectedParentCategory] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [selectedMarketplace, setSelectedMarketplace] = useState('');
+  const [selectedSKU, setSelectedSKU] = useState('');
+  const [selectedParentCategory, setSelectedParentCategory] = useState('');
+  const [selectedFirstLevel, setSelectedFirstLevel] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  
+  // Calculate Profit states
+  const [sellingPrice, setSellingPrice] = useState('');
+  const [calculatedProfit, setCalculatedProfit] = useState('');
+  
+  // Calculate Selling Price states
+  const [profitPercentage, setProfitPercentage] = useState('');
+  const [calculatedSellingPrice, setCalculatedSellingPrice] = useState('');
+  
+  // Mock cost price - in real app, this would come from product data
+  const costPrice = 595;
 
-  const handleGetProductDetails = () => {
-    if (selectedProduct) {
-      navigate('/product-details', {
-        state: {
-          brand: selectedBrand,
-          product: selectedProduct,
-          parentCategory: selectedParentCategory,
-          category: selectedCategory,
-          subCategory: selectedSubCategory,
-          marketplace: selectedMarketplace
-        }
-      });
+  const handleCalculateProfit = () => {
+    if (sellingPrice) {
+      const selling = parseFloat(sellingPrice);
+      const profit = selling - costPrice;
+      const profitPercent = ((profit / costPrice) * 100).toFixed(2);
+      setCalculatedProfit(`${profitPercent}% (₹${profit.toFixed(2)})`);
     } else {
-      alert('Please select a Product before viewing details.');
+      alert('Please enter selling price');
     }
   };
 
-  const handleCalculatePrice = () => {
-    if (selectedProduct && selectedMarketplace) {
-      navigate('/price-calculator', {
-        state: {
-          brand: selectedBrand,
-          product: selectedProduct,
-          parentCategory: selectedParentCategory,
-          category: selectedCategory,
-          subCategory: selectedSubCategory,
-          marketplace: selectedMarketplace
-        }
-      });
+  const handleCalculateSellingPrice = () => {
+    if (profitPercentage) {
+      const profitPct = parseFloat(profitPercentage);
+      const calculatedPrice = costPrice + (costPrice * profitPct / 100);
+      setCalculatedSellingPrice(`₹${calculatedPrice.toFixed(2)}`);
     } else {
-      alert('Please select at least a Product and Marketplace before calculating price.');
+      alert('Please enter profit percentage');
     }
   };
-
-  const marketplaceData = [
-    { marketplace: 'Amazon', avgSellingPrice: '₹999', avgCost: '₹670', avgProfit: '₹329', margin: '33%' },
-    { marketplace: 'Flipkart', avgSellingPrice: '₹949', avgCost: '₹680', avgProfit: '₹269', margin: '28%' },
-    { marketplace: 'Myntra', avgSellingPrice: '₹1199', avgCost: '₹900', avgProfit: '₹299', margin: '25%' },
-  ];
 
   return (
     <div className="pricing-bg">
       <main className="pricing-main">
         <header className="pricing-header">
-          <h1 className="pricing-title">Prizing</h1>
+          <h1 className="pricing-title">Pricing</h1>
           <div className="header-actions">
             <button className="icon-btn">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,20 +71,61 @@ const PricingPage: React.FC = () => {
 
         <div className="pricing-divider" />
 
-        <section className="select-section">
-          <h2 className="section-title">Select Product & Marketplace</h2>
+        {/* Select Marketplace Section */}
+        <section className="marketplace-section">
+          <h2 className="section-title">Select Marketplace</h2>
+          <div className="marketplace-card">
+            <div className="dropdown-wrapper">
+              <select 
+                className="dropdown-select"
+                value={selectedMarketplace}
+                onChange={(e) => setSelectedMarketplace(e.target.value)}
+              >
+                <option value="">Select Marketplace</option>
+                <option value="amazon">Amazon</option>
+                <option value="flipkart">Flipkart</option>
+                <option value="myntra">Myntra</option>
+              </select>
+              <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </section>
 
-          <div className="selection-card">
-            <div className="dropdowns-grid">
+        {/* Select Product Section */}
+        <section className="product-section">
+          <h2 className="section-title">Select Product</h2>
+          <div className="product-card">
+            <div className="product-dropdowns">
               <div className="dropdown-wrapper">
+                <label className="dropdown-label">SKU / Product Name</label>
                 <select 
                   className="dropdown-select"
-                  value={selectedBrand}
-                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  value={selectedSKU}
+                  onChange={(e) => setSelectedSKU(e.target.value)}
                 >
-                  <option value="">Select Brand</option>
-                  <option value="brand1">Brand 1</option>
-                  <option value="brand2">Brand 2</option>
+                  <option value="">Select SKU</option>
+                  <option value="sku1">SKU001 - Product A</option>
+                  <option value="sku2">SKU002 - Product B</option>
+                </select>
+                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              <div className="or-divider">OR</div>
+
+              <div className="dropdown-wrapper">
+                <label className="dropdown-label">Parent Category</label>
+                <select 
+                  className="dropdown-select"
+                  value={selectedParentCategory}
+                  onChange={(e) => setSelectedParentCategory(e.target.value)}
+                >
+                  <option value="">Select Parent Category</option>
+                  <option value="electronics">Electronics</option>
+                  <option value="clothing">Clothing</option>
                 </select>
                 <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
@@ -101,6 +133,23 @@ const PricingPage: React.FC = () => {
               </div>
 
               <div className="dropdown-wrapper">
+                <label className="dropdown-label">First Level</label>
+                <select 
+                  className="dropdown-select"
+                  value={selectedFirstLevel}
+                  onChange={(e) => setSelectedFirstLevel(e.target.value)}
+                >
+                  <option value="">Select First Level</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="laptop">Laptop</option>
+                </select>
+                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              <div className="dropdown-wrapper">
+                <label className="dropdown-label">Product</label>
                 <select 
                   className="dropdown-select"
                   value={selectedProduct}
@@ -114,97 +163,69 @@ const PricingPage: React.FC = () => {
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-
-              <div className="dropdown-wrapper">
-                <select 
-                  className="dropdown-select"
-                  value={selectedParentCategory}
-                  onChange={(e) => setSelectedParentCategory(e.target.value)}
-                >
-                  <option value="">Select Parent Category</option>
-                  <option value="category1">Category 1</option>
-                  <option value="category2">Category 2</option>
-                </select>
-                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-
-              <div className="dropdown-wrapper">
-                <select 
-                  className="dropdown-select"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="">Select Category</option>
-                  <option value="cat1">Category 1</option>
-                  <option value="cat2">Category 2</option>
-                </select>
-                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-
-              <div className="dropdown-wrapper">
-                <select 
-                  className="dropdown-select"
-                  value={selectedSubCategory}
-                  onChange={(e) => setSelectedSubCategory(e.target.value)}
-                >
-                  <option value="">Select Sub-Category</option>
-                  <option value="sub1">Sub-Category 1</option>
-                  <option value="sub2">Sub-Category 2</option>
-                </select>
-                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-
-              <div className="dropdown-wrapper">
-                <select 
-                  className="dropdown-select"
-                  value={selectedMarketplace}
-                  onChange={(e) => setSelectedMarketplace(e.target.value)}
-                >
-                  <option value="">Select Marketplace</option>
-                  <option value="amazon">Amazon</option>
-                  <option value="flipkart">Flipkart</option>
-                  <option value="myntra">Myntra</option>
-                </select>
-                <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
             </div>
-          </div>
-
-          <div className="action-buttons">
-            <button className="btn-secondary" onClick={handleGetProductDetails}>Get Product Details</button>
-            <button className="btn-primary" onClick={handleCalculatePrice}>Calculate Price</button>
           </div>
         </section>
 
-        <section className="summary-section">
-          <h2 className="section-title">Marketplace Performance Summary</h2>
-
-          <div className="summary-card">
-            <div className="summary-table">
-              <div className="summary-table-row summary-table-header">
-                <div>Marketplace</div>
-                <div>Avg Selling Price</div>
-                <div>Avg Cost</div>
-                <div>Avg Profit</div>
-                <div>Margin %</div>
-              </div>
-              {marketplaceData.map((item, idx) => (
-                <div className="summary-table-row" key={idx}>
-                  <div>{item.marketplace}</div>
-                  <div>{item.avgSellingPrice}</div>
-                  <div>{item.avgCost}</div>
-                  <div>{item.avgProfit}</div>
-                  <div>{item.margin}</div>
+        {/* Calculation Section */}
+        <section className="calculation-section">
+          <div className="calc-container">
+            {/* Calculate Profit */}
+            <div className="calc-card">
+              <h3 className="calc-title">Calculate Profit</h3>
+              <div className="calc-content">
+                <div className="input-group">
+                  <label className="input-label">Selling Price</label>
+                  <input 
+                    type="number"
+                    className="input-field"
+                    placeholder="Enter selling price"
+                    value={sellingPrice}
+                    onChange={(e) => setSellingPrice(e.target.value)}
+                  />
                 </div>
-              ))}
+                <button className="calc-button" onClick={handleCalculateProfit}>
+                  Calculate
+                </button>
+                {calculatedProfit && (
+                  <div className="result-display">
+                    <span className="result-label">Profit:</span>
+                    <span className="result-value">{calculatedProfit}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Calculate Selling Price */}
+            <div className="calc-card">
+              <h3 className="calc-title">Calculate Selling Price</h3>
+              <div className="calc-content">
+                <div className="input-group">
+                  <label className="input-label">Profit %</label>
+                  <input 
+                    type="number"
+                    className="input-field"
+                    placeholder="Enter profit %"
+                    value={profitPercentage}
+                    onChange={(e) => setProfitPercentage(e.target.value)}
+                  />
+                </div>
+                <button className="calc-button" onClick={handleCalculateSellingPrice}>
+                  Calculate
+                </button>
+                {calculatedSellingPrice && (
+                  <div className="result-display">
+                    <span className="result-label">Selling Price:</span>
+                    <span className="result-value">{calculatedSellingPrice}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Rebate */}
+            <div className="calc-card rebate-card">
+              <h3 className="calc-title">Rebate</h3>
+              <div className="rebate-value">₹{costPrice}</div>
             </div>
           </div>
         </section>
