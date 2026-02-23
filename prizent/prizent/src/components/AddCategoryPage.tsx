@@ -2,15 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AddCategoryPage.css';
 import { useCategories } from '../contexts/CategoryContext';
-import { Category } from '../services/categoryService';
 import { getCustomFields, saveCustomFieldValue, CustomFieldResponse } from '../services/customFieldService';
 
 const AddCategoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { categories, createCategory, loading } = useCategories();
+  const { createCategory } = useCategories();
   const [categoryName, setCategoryName] = useState('');
-  const [categoryType, setCategoryType] = useState('');
-  const [parentCategory, setParentCategory] = useState('');
+  const [categoryType, setCategoryType] = useState('Parent category');
   const [enableCategory, setEnableCategory] = useState(true);
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -37,26 +35,12 @@ const AddCategoryPage: React.FC = () => {
       setValidationError('Category name is required');
       return;
     }
-    
-    if (!categoryType) {
-      setValidationError('Category type is required');
-      return;
-    }
 
     try {
       setSaving(true);
       setValidationError('');
       
-      // Determine parent ID based on category type
-      let parentId = null;
-      if (categoryType === 'Category' || categoryType === 'Sub-category') {
-        if (!parentCategory) {
-          setValidationError(`Parent category is required for ${categoryType}`);
-          setSaving(false);
-          return;
-        }
-        parentId = parseInt(parentCategory);
-      }
+      const parentId = null;
       
       // CategoryContext will automatically refresh all components
       const response = await createCategory(categoryName.trim(), parentId);
@@ -158,56 +142,13 @@ const AddCategoryPage: React.FC = () => {
               name="categoryType"
               className="form-select"
               value={categoryType}
-              onChange={(e) => setCategoryType(e.target.value)}
+              onChange={(e) => { setCategoryType(e.target.value); }}
               disabled={saving}
             >
               <option value="Parent category">Parent category</option>
               <option value="Category">Category</option>
-              <option value="Sub-category">Sub-category</option>
             </select>
-            {(categoryType === 'Category' || categoryType === 'Sub-category') && (
-              <select
-                name="parentCategory"
-                className="form-select"
-                value={parentCategory}
-                onChange={(e) => setParentCategory(e.target.value)}
-                disabled={saving || loading}
-              >
-                <option value="">parent categories</option>
-                {(() => {
-                  // Filter categories based on the selected category type
-                  let availableParents: Category[] = [];
-                  
-                  if (categoryType === 'Category') {
-                    // For "Category": Only show root categories (no parent)
-                    availableParents = categories.filter(cat => 
-                      cat.parentCategoryId === null && 
-                      cat.enabled && 
-                      // Filter out test/invalid categories
-                      !['adda', 'test', 'TO', 'top'].includes(cat.name.toLowerCase())
-                    );
-                  } else if (categoryType === 'Sub-category') {
-                    // For "Sub-category": Show Level 1 categories (has parent but can have children)
-                    const rootCategoryIds = new Set(
-                      categories.filter(cat => cat.parentCategoryId === null).map(cat => cat.id)
-                    );
-                    availableParents = categories.filter(cat => 
-                      cat.parentCategoryId !== null && 
-                      rootCategoryIds.has(cat.parentCategoryId) &&
-                      cat.enabled &&
-                      // Filter out test/invalid categories  
-                      !['adda', 'test', 'TO', 'top'].includes(cat.name.toLowerCase())
-                    );
-                  }
-                  
-                  return availableParents.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ));
-                })()}
-              </select>
-            )}
+
             <div className="checkbox-container">
               <input
                 type="checkbox"

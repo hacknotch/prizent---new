@@ -22,8 +22,8 @@ const AddProductPage: React.FC = () => {
     proposedSellingPriceNonSales: 0,
     currentType: 'A'
   });
-  const [brandName, setBrandName] = useState('');
   const [enabled, setEnabled] = useState(false);
+  const [parentCategoryId, setParentCategoryId] = useState<number>(0);
   const [customFields, setCustomFields] = useState<CustomFieldResponse[]>([]);
   const [customFieldValues, setCustomFieldValues] = useState<{ [key: number]: string }>({});
 
@@ -83,6 +83,13 @@ const AddProductPage: React.FC = () => {
       return;
     }
 
+    if (!formData.brandId || formData.brandId === 0) {
+      alert('Please select a brand');
+      return;
+    }
+
+    console.log('Creating product with data:', formData);
+
     try {
       setLoading(true);
       const response = await productService.createProduct(formData);
@@ -106,6 +113,12 @@ const AddProductPage: React.FC = () => {
             }
           })
         );
+
+        // If user unchecked Active product, disable it (backend defaults to enabled)
+        if (!enabled) {
+          await productService.toggleProductStatus(response.id, false);
+          console.log('Product disabled after creation');
+        }
       }
 
       alert('Product created successfully!');
@@ -201,13 +214,20 @@ const AddProductPage: React.FC = () => {
                 onChange={handleInputChange}
                 required
               />
-              <input 
-                type="text" 
-                placeholder="brand name" 
+              <select 
                 className="form-input"
-                value={brandName}
-                onChange={(e) => setBrandName(e.target.value)}
-              />
+                name="brandId"
+                value={formData.brandId}
+                onChange={handleInputChange}
+                required
+              >
+                <option value={0} disabled>Select brand</option>
+                {brands.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </option>
+                ))}
+              </select>
               <label className="activate-checkbox">
                 <input 
                   type="checkbox" 
@@ -226,21 +246,43 @@ const AddProductPage: React.FC = () => {
           <section className="categories-details-section">
             <h2 className="section-title">Categories Details</h2>
             <div className="categories-card">
+              {/* Parent Category - root level (parentCategoryId = null) */}
               <div className="form-input-with-dropdown">
+                <select 
+                  className="form-select"
+                  value={parentCategoryId}
+                  onChange={(e) => {
+                    setParentCategoryId(Number(e.target.value));
+                    // Reset child category when parent changes
+                    setFormData(prev => ({ ...prev, categoryId: 0 }));
+                  }}
+                >
+                  <option value={0}>Parent Category</option>
+                  {categories
+                    .filter(category => category.enabled && category.parentCategoryId === null)
+                    .map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                </select>
+                <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
+                  <path d="M0 0L5 5L10 0H0Z" fill="#1E1E1E"/>
+                </svg>
+              </div>
+              {/* Categories - children of selected parent */}
+              <div className="form-input-with-dropdown" style={{ marginTop: '12px' }}>
                 <select 
                   className="form-select" 
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
                   required
+                  disabled={!parentCategoryId}
                 >
                   <option value={0}>Categories</option>
                   {categories
-                    .filter(category => 
-                      category.enabled && 
-                      !['adda', 'test', 'TO', 'top'].includes(category.name.toLowerCase()) &&
-                      category.parentCategoryId !== null
-                    )
+                    .filter(category => category.enabled && category.parentCategoryId === parentCategoryId)
                     .map(category => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -284,6 +326,16 @@ const AddProductPage: React.FC = () => {
                 className="form-input"
                 name="proposedSellingPriceSales"
                 value={formData.proposedSellingPriceSales || ''}
+                onChange={handleInputChange}
+                min="0"
+                step="0.01"
+              />
+              <input 
+                type="number" 
+                placeholder="Proposed selling price (non-sales)" 
+                className="form-input"
+                name="proposedSellingPriceNonSales"
+                value={formData.proposedSellingPriceNonSales || ''}
                 onChange={handleInputChange}
                 min="0"
                 step="0.01"

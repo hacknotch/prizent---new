@@ -22,32 +22,36 @@ const authService = {
   login: async (username: string, password: string): Promise<LoginResponse> => {
     console.log('=== AUTH SERVICE LOGIN START ===');
     console.log('authService.login called with username:', username);
-    console.log('Password length:', password.length);
+    if (typeof password === 'string') {
+      console.log('Password length:', password.length);
+    } else {
+      console.log('Password is not a string:', password);
+    }
     console.log('Request URL will be: /api/auth/login');
-    
+
     const requestBody = {
       username,
       password
     };
     console.log('Request body:', requestBody);
-    
+
     try {
       console.log('Making POST request to auth/login...');
       const response = await apiClient.post('auth/login', requestBody);
-      
+
       console.log('✓ Response received!');
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
       console.log('Response data:', response.data);
       console.log('Response data type:', typeof response.data);
-      
+
       // Store token in localStorage if login successful
       if (response.data.success && response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         console.log('✓ Token and user stored in localStorage');
       }
-      
+
       console.log('=== AUTH SERVICE LOGIN END (SUCCESS) ===');
       return response.data;
     } catch (error: any) {
@@ -60,7 +64,7 @@ const authService = {
       console.error('Error request:', error.request);
       console.error('Error config:', error.config);
       console.error('=== AUTH SERVICE LOGIN END (ERROR) ===');
-      
+
       // Return a proper error response instead of throwing
       const errorMessage = error.response?.data?.message || error.message || 'Network error occurred';
       return {
@@ -114,7 +118,15 @@ const authService = {
         localStorage.removeItem('token');
         return false;
       }
-      const user = JSON.parse(userStr);
+      let user = null;
+      try {
+        user = JSON.parse(userStr);
+      } catch (e) {
+        // Invalid JSON
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return false;
+      }
       if (!user || !user.username) {
         // Invalid user data
         localStorage.removeItem('token');
@@ -123,7 +135,7 @@ const authService = {
       }
       return true;
     } catch (error) {
-      // Invalid JSON or other error
+      // Unexpected error
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       return false;
@@ -133,7 +145,14 @@ const authService = {
   // Get current user
   getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    if (!userStr) return null;
+    try {
+      return JSON.parse(userStr);
+    } catch (e) {
+      // If parsing fails, clear invalid user and return null
+      localStorage.removeItem('user');
+      return null;
+    }
   },
 
   // Get token

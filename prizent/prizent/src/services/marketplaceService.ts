@@ -23,6 +23,8 @@ export interface CreateMarketplaceRequest {
   description: string;
   enabled: boolean;
   costs: CreateMarketplaceCostRequest[];
+  // Optional associated brand id
+  brandId?: number;
 }
 
 export interface CreateMarketplaceCostRequest {
@@ -119,6 +121,18 @@ export const formatCostSlabs = (costs: MarketplaceCost[]): string => {
   
   const ranges = costs.map(cost => cost.costProductRange).filter(Boolean);
   return ranges.join(', ') || 'No range specified';
+};
+
+// Helper to get all formatted slabs for a specific category
+export const getSlabsForCategory = (costs: MarketplaceCost[], category: 'COMMISSION' | 'SHIPPING' | 'MARKETING'): string[] => {
+  if (!costs || costs.length === 0) return ['-'];
+  const filtered = costs.filter(c => c.costCategory === category);
+  if (filtered.length === 0) return ['-'];
+  return filtered.map(c => {
+    const value = c.costValueType === 'P' ? `${c.costValue}%` : `₹${c.costValue}`;
+    const range = c.costProductRange ? ` (${c.costProductRange})` : '';
+    return `${value}${range}`;
+  });
 };
 
 const marketplaceService = {

@@ -1,47 +1,173 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './PricingPage.css';
+import marketplaceService, { Marketplace } from '../services/marketplaceService';
+import productService, { Product } from '../services/productService';
+import categoryService, { Category } from '../services/categoryService';
+import { calculatePricing } from '../services/pricingService';
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedMarketplace, setSelectedMarketplace] = useState('');
-  const [selectedSKU, setSelectedSKU] = useState('');
-  const [selectedParentCategory, setSelectedParentCategory] = useState('');
-  const [selectedFirstLevel, setSelectedFirstLevel] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
-  
-  // Calculate Profit states
+
+
+  // --- Data states ---
+  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- Selection states ---
+  const [selectedMarketplaceId, setSelectedMarketplaceId] = useState('');
+  const [selectedSKUProductId, setSelectedSKUProductId] = useState('');
+  const [selectedParentCategoryId, setSelectedParentCategoryId] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [selectedCategoryProductId, setSelectedCategoryProductId] = useState('');
+  const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+
+  // --- Calculation states ---
   const [sellingPrice, setSellingPrice] = useState('');
   const [calculatedProfit, setCalculatedProfit] = useState('');
-  
-  // Calculate Selling Price states
   const [profitPercentage, setProfitPercentage] = useState('');
   const [calculatedSellingPrice, setCalculatedSellingPrice] = useState('');
-  
-  // Mock cost price - in real app, this would come from product data
-  const costPrice = 595;
 
-  const handleCalculateProfit = () => {
-    if (sellingPrice) {
-      const selling = parseFloat(sellingPrice);
-      const profit = selling - costPrice;
-      const profitPercent = ((profit / costPrice) * 100).toFixed(2);
-      setCalculatedProfit(`${profitPercent}% (₹${profit.toFixed(2)})`);
-    } else {
-      alert('Please enter selling price');
+  // Load all data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [mpRes, prodRes, catRes] = await Promise.all([
+          marketplaceService.getAllMarketplaces(0, 100),
+          productService.getAllProducts(0, 500),
+          categoryService.getAllCategories(),
+        ]);
+        if (mpRes.marketplaces?.content) {
+          setMarketplaces(mpRes.marketplaces.content.filter((m: Marketplace) => m.enabled));
+        }
+        if (prodRes?.content) {
+          const enabledProds = prodRes.content.filter((p: Product) => p.enabled);
+          console.log('Products loaded:', enabledProds.length, enabledProds.slice(0,3).map((p: Product) => ({id: p.id, name: p.name, categoryId: p.categoryId})));
+          setProducts(enabledProds);
+        }
+        if (catRes.categories) {
+          const allCats = catRes.categories.filter((c: Category) => c.enabled);
+          console.log('Categories loaded:', allCats.length, allCats.map((c: Category) => ({id: c.id, name: c.name})));
+          setCategories(allCats);
+        } else {
+          console.warn('No categories in response:', catRes);
+        }
+      } catch (err: any) {
+        setError('Failed to load data. Please refresh.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // --- Derived category lists ---
+  const parentCategories = categories.filter(c => c.parentCategoryId === null);
+  const childCategories = selectedParentCategoryId
+    ? categories.filter(c => c.parentCategoryId === parseInt(selectedParentCategoryId))
+    : [];
+  const categoryFilteredProducts = selectedCategoryId
+    ? products.filter(p => Number(p.categoryId) === parseInt(selectedCategoryId))
+    : [];
+
+  // --- Handlers: SKU path clears category path ---
+  const handleSKUChange = (val: string) => {
+    setSelectedSKUProductId(val);
+    setSelectedParentCategoryId('');
+    setSelectedCategoryId('');
+    setSelectedCategoryProductId('');
+    const found = val ? products.find(p => p.id === parseInt(val)) || null : null;
+    setActiveProduct(found);
+    setCalculatedProfit('');
+    setCalculatedSellingPrice('');
+  };
+
+  // --- Handlers: Category path clears SKU ---
+  const handleParentCategoryChange = (val: string) => {
+    setSelectedParentCategoryId(val);
+    setSelectedCategoryId('');
+    setSelectedCategoryProductId('');
+    setSelectedSKUProductId('');
+    setActiveProduct(null);
+    setCalculatedProfit('');
+    setCalculatedSellingPrice('');
+  };
+
+  const handleCategoryChange = (val: string) => {
+    setSelectedCategoryId(val);
+    setSelectedCategoryProductId('');
+    setSelectedSKUProductId('');
+    setActiveProduct(null);
+    setCalculatedProfit('');
+    setCalculatedSellingPrice('');
+  };
+
+  const handleCategoryProductChange = (val: string) => {
+    setSelectedCategoryProductId(val);
+    setSelectedSKUProductId('');
+    const found = val ? products.find(p => p.id === parseInt(val)) || null : null;
+    setActiveProduct(found);
+    setCalculatedProfit('');
+    setCalculatedSellingPrice('');
+  };
+
+  const costPrice = activeProduct?.productCost ?? 0;
+
+  const handleCalculateProfit = async () => {
+    if (!activeProduct) { alert('Please select a product first'); return; }
+    if (!selectedMarketplaceId) { alert('Please select a marketplace first'); return; }
+    if (!sellingPrice) { alert('Please enter selling price'); return; }
+    try {
+      const result = await calculatePricing({
+        skuId: activeProduct.id,
+        marketplaceId: parseInt(selectedMarketplaceId),
+        mode: 'SELLING_PRICE',
+        value: parseFloat(sellingPrice),
+      });
+      const isLoss = result.profit < 0;
+      setCalculatedProfit(JSON.stringify({
+        isLoss,
+        text: `${Math.abs(result.profitPercentage).toFixed(2)}% (₹${Math.abs(result.profit).toFixed(2)})`,
+      }));
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err?.message ?? 'Calculation failed. Please check that the pricing service is running.';
+      alert(msg);
     }
   };
 
-  const handleCalculateSellingPrice = () => {
-    if (profitPercentage) {
-      const profitPct = parseFloat(profitPercentage);
-      const calculatedPrice = costPrice + (costPrice * profitPct / 100);
-      setCalculatedSellingPrice(`₹${calculatedPrice.toFixed(2)}`);
-    } else {
-      alert('Please enter profit percentage');
+  const handleCalculateSellingPrice = async () => {
+    if (!activeProduct) { alert('Please select a product first'); return; }
+    if (!selectedMarketplaceId) { alert('Please select a marketplace first'); return; }
+    if (!profitPercentage) { alert('Please enter profit percentage'); return; }
+    try {
+      const result = await calculatePricing({
+        skuId: activeProduct.id,
+        marketplaceId: parseInt(selectedMarketplaceId),
+        mode: 'PROFIT_PERCENT',
+        value: parseFloat(profitPercentage),
+      });
+      setCalculatedSellingPrice(`₹${result.sellingPrice.toFixed(2)}`);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err?.message ?? 'Calculation failed. Please check that the pricing service is running.';
+      alert(msg);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="pricing-bg">
+        <main className="pricing-main">
+          <p style={{ padding: '40px', color: '#454545' }}>Loading pricing data...</p>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className="pricing-bg">
       <main className="pricing-main">
@@ -70,21 +196,24 @@ const PricingPage: React.FC = () => {
         </header>
 
         <div className="pricing-divider" />
+        {error && (
+          <div style={{ color: 'red', padding: '10px 0', marginBottom: '16px' }}>{error}</div>
+        )}
 
         {/* Select Marketplace Section */}
         <section className="marketplace-section">
           <h2 className="section-title">Select Marketplace</h2>
           <div className="marketplace-card">
             <div className="dropdown-wrapper">
-              <select 
+              <select
                 className="dropdown-select"
-                value={selectedMarketplace}
-                onChange={(e) => setSelectedMarketplace(e.target.value)}
+                value={selectedMarketplaceId}
+                onChange={(e) => setSelectedMarketplaceId(e.target.value)}
               >
                 <option value="">Select Marketplace</option>
-                <option value="amazon">Amazon</option>
-                <option value="flipkart">Flipkart</option>
-                <option value="myntra">Myntra</option>
+                {marketplaces.map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
               </select>
               <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
@@ -92,22 +221,26 @@ const PricingPage: React.FC = () => {
             </div>
           </div>
         </section>
-
+=======
         {/* Select Product Section */}
         <section className="product-section">
           <h2 className="section-title">Select Product</h2>
           <div className="product-card">
             <div className="product-dropdowns">
+              {/* SKU / Product Name */}
               <div className="dropdown-wrapper">
                 <label className="dropdown-label">SKU / Product Name</label>
-                <select 
+                <select
                   className="dropdown-select"
-                  value={selectedSKU}
-                  onChange={(e) => setSelectedSKU(e.target.value)}
+                  value={selectedSKUProductId}
+                  onChange={(e) => handleSKUChange(e.target.value)}
                 >
                   <option value="">Select SKU</option>
-                  <option value="sku1">SKU001 - Product A</option>
-                  <option value="sku2">SKU002 - Product B</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.skuCode} — {p.name}
+                    </option>
+                  ))}
                 </select>
                 <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
@@ -116,54 +249,72 @@ const PricingPage: React.FC = () => {
 
               <div className="or-divider">OR</div>
 
+              {/* Parent Category */}
               <div className="dropdown-wrapper">
                 <label className="dropdown-label">Parent Category</label>
-                <select 
+                <select
                   className="dropdown-select"
-                  value={selectedParentCategory}
-                  onChange={(e) => setSelectedParentCategory(e.target.value)}
+                  value={selectedParentCategoryId}
+                  onChange={(e) => handleParentCategoryChange(e.target.value)}
                 >
                   <option value="">Select Parent Category</option>
-                  <option value="electronics">Electronics</option>
-                  <option value="clothing">Clothing</option>
+                  {parentCategories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
                 <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
 
+              {/* Category */}
               <div className="dropdown-wrapper">
-                <label className="dropdown-label">First Level</label>
-                <select 
+                <label className="dropdown-label">Category</label>
+                <select
                   className="dropdown-select"
-                  value={selectedFirstLevel}
-                  onChange={(e) => setSelectedFirstLevel(e.target.value)}
+                  value={selectedCategoryId}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  disabled={!selectedParentCategoryId}
                 >
-                  <option value="">Select First Level</option>
-                  <option value="mobile">Mobile</option>
-                  <option value="laptop">Laptop</option>
+                  <option value="">Select Category</option>
+                  {childCategories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
                 <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
 
+              {/* Product under Category */}
               <div className="dropdown-wrapper">
                 <label className="dropdown-label">Product</label>
-                <select 
+                <select
                   className="dropdown-select"
-                  value={selectedProduct}
-                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  value={selectedCategoryProductId}
+                  onChange={(e) => handleCategoryProductChange(e.target.value)}
+                  disabled={!selectedCategoryId}
                 >
                   <option value="">Select Product</option>
-                  <option value="product1">Product 1</option>
-                  <option value="product2">Product 2</option>
+                  {categoryFilteredProducts.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
                 </select>
                 <svg className="dropdown-icon" width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 4L9 1" stroke="#454545" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             </div>
+
+            {/* Selected product summary */}
+            {activeProduct && (
+              <div style={{ marginTop: '14px', padding: '10px 16px', background: '#F5F9FA', borderRadius: '8px', display: 'flex', gap: '24px', flexWrap: 'wrap', fontSize: '13px', color: '#454545' }}>
+                <span><strong>SKU:</strong> {activeProduct.skuCode}</span>
+                <span><strong>MRP:</strong> ₹{activeProduct.mrp}</span>
+                <span><strong>Cost:</strong> ₹{activeProduct.productCost}</span>
+                <span><strong>Proposed SP:</strong> ₹{activeProduct.proposedSellingPriceSales}</span>
+              </div>
+            )}
           </div>
         </section>
 
@@ -175,8 +326,11 @@ const PricingPage: React.FC = () => {
               <h3 className="calc-title">Calculate Profit</h3>
               <div className="calc-content">
                 <div className="input-group">
-                  <label className="input-label">Selling Price</label>
-                  <input 
+                  <label className="input-label">
+                    Selling Price
+                    {activeProduct && <span style={{ color: '#7C7C7C', fontWeight: 400 }}> (Cost: ₹{costPrice})</span>}
+                  </label>
+                  <input
                     type="number"
                     className="input-field"
                     placeholder="Enter selling price"
@@ -187,12 +341,19 @@ const PricingPage: React.FC = () => {
                 <button className="calc-button" onClick={handleCalculateProfit}>
                   Calculate
                 </button>
-                {calculatedProfit && (
-                  <div className="result-display">
-                    <span className="result-label">Profit:</span>
-                    <span className="result-value">{calculatedProfit}</span>
-                  </div>
-                )}
+                {calculatedProfit && (() => {
+                  const p = JSON.parse(calculatedProfit);
+                  return (
+                    <div className="result-display">
+                      <span className="result-label" style={{ color: p.isLoss ? '#c00' : undefined }}>
+                        {p.isLoss ? 'Loss:' : 'Profit:'}
+                      </span>
+                      <span className="result-value" style={{ color: p.isLoss ? '#c00' : '#008000' }}>
+                        {p.text}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -201,8 +362,11 @@ const PricingPage: React.FC = () => {
               <h3 className="calc-title">Calculate Selling Price</h3>
               <div className="calc-content">
                 <div className="input-group">
-                  <label className="input-label">Profit %</label>
-                  <input 
+                  <label className="input-label">
+                    Profit %
+                    {activeProduct && <span style={{ color: '#7C7C7C', fontWeight: 400 }}> (Cost: ₹{costPrice})</span>}
+                  </label>
+                  <input
                     type="number"
                     className="input-field"
                     placeholder="Enter profit %"
@@ -222,11 +386,6 @@ const PricingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Rebate */}
-            <div className="calc-card rebate-card">
-              <h3 className="calc-title">Rebate</h3>
-              <div className="rebate-value">₹{costPrice}</div>
-            </div>
           </div>
         </section>
       </main>
