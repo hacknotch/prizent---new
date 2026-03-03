@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategories } from '../contexts/CategoryContext';
 import { getCustomFields, saveCustomFieldValue, getCustomFieldValues, CustomFieldResponse } from '../services/customFieldService';
-import './EditCategoryPage.css';
+import './AddCategoryPage.css';
 
 const EditCategoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,7 +10,6 @@ const EditCategoryPage: React.FC = () => {
   const { categories, getCategoryById, updateCategory, loading, error } = useCategories();
   
   const [categoryName, setCategoryName] = useState('');
-  const [categoryType, setCategoryType] = useState('Parent category');
   const [parentCategory, setParentCategory] = useState('');
   const [enableCategory, setEnableCategory] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,8 +43,6 @@ const EditCategoryPage: React.FC = () => {
         
         if (category) {
           setCategoryName(category.name);
-          const hasParent = !!category.parentCategoryId;
-          setCategoryType(hasParent ? 'Category' : 'Parent category');
           setParentCategory(category.parentCategoryId ? category.parentCategoryId.toString() : '');
           setEnableCategory(category.enabled);
 
@@ -133,27 +130,25 @@ const EditCategoryPage: React.FC = () => {
     return (
       <div className="add-category-page">
         <main className="main-content">
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
-            <div>Loading category...</div>
-          </div>
+          <div style={{ padding: '2rem', textAlign: 'center' }}>Loading category...</div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="edit-category-page">
+    <div className="add-category-page">
       {/* Main Content */}
       <main className="main-content">
         {/* Header */}
-        <header className="page-header">
+        <header className="header">
           <div className="header-left">
             <button className="back-btn" onClick={handleCancel}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 18L9 12L15 6" stroke="#1E1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <h2 className="page-title">Edit Category</h2>
+            <h1 className="page-title-main">Edit Category</h1>
           </div>
           <div className="header-actions">
             <button className="icon-btn">
@@ -179,121 +174,97 @@ const EditCategoryPage: React.FC = () => {
         </header>
 
         {/* Category Details Section */}
-        <section className="form-section">
-          <h3 className="section-title">Category Details</h3>
-          {validationError && (
-            <div style={{ color: 'red', padding: '0.5rem', marginBottom: '1rem', backgroundColor: '#fee', borderRadius: '4px' }}>
-              {validationError}
+        <div className="content-wrapper">
+          <h2 className="section-title">Category Details</h2>
+          {(validationError || error) && (
+            <div style={{ color: '#c0392b', padding: '8px 12px', marginBottom: '12px', background: '#ffeaea', borderRadius: '4px', fontSize: '13px' }}>
+              {validationError || error}
             </div>
           )}
-          {error && (
-            <div style={{ color: 'red', padding: '0.5rem', marginBottom: '1rem', backgroundColor: '#fee', borderRadius: '4px' }}>
-              {error}
+          <div className="brand-form" style={{ flexDirection: 'column', gap: '12px', padding: '30px 40px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Category Name + Parent Category row */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', padding: '16px', borderRadius: '8px', border: '1px solid #e0e4ea', background: '#fff' }}>
+                <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                  <label className="field-label">Category Name</label>
+                  <input
+                    type="text"
+                    placeholder="Enter category name"
+                    className="form-input"
+                    value={categoryName}
+                    onChange={e => { setCategoryName(e.target.value); setValidationError(''); }}
+                    disabled={saving}
+                  />
+                </div>
+                <div className="form-field" style={{ flex: 1, margin: 0 }}>
+                  <label className="field-label">Parent Category</label>
+                  <select
+                    className="form-select"
+                    value={parentCategory}
+                    onChange={e => setParentCategory(e.target.value)}
+                    disabled={saving || loading}
+                  >
+                    <option value="">Parent Category</option>
+                    {categories.filter(cat => cat.id.toString() !== id).map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Custom Fields row */}
+              {customFields.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', padding: '16px', borderRadius: '8px', border: '1px solid #e0e4ea', background: '#fff', flexWrap: 'wrap' }}>
+                  {customFields.map(field => (
+                    <div key={field.id} className="form-field" style={{ flex: 1, minWidth: '200px', margin: 0 }}>
+                      <label className="field-label">{field.name}{field.required ? ' *' : ''}</label>
+                      {field.fieldType === 'text' || field.fieldType === 'numeric' ? (
+                        <input
+                          type={field.fieldType === 'numeric' ? 'number' : 'text'}
+                          placeholder={field.name}
+                          className="form-input"
+                          value={customFieldValues[field.id] || ''}
+                          onChange={e => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
+                          required={field.required}
+                          disabled={saving}
+                        />
+                      ) : field.fieldType === 'dropdown' && field.dropdownOptions ? (
+                        <select
+                          className="form-select"
+                          value={customFieldValues[field.id] || ''}
+                          onChange={e => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
+                          required={field.required}
+                          disabled={saving}
+                        >
+                          <option value="">{field.name}</option>
+                          {field.dropdownOptions.split(',').map((option: string, idx: number) => (
+                            <option key={idx} value={option.trim()}>{option.trim()}</option>
+                          ))}
+                        </select>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          <div className="form-container">
-            <input
-              type="text"
-              name="categoryName"
-              placeholder="enter category name"
-              className="form-input"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              disabled={saving}
-            />
-            <select
-              name="categoryType"
-              className="form-select"
-              value={categoryType}
-              onChange={(e) => { setCategoryType(e.target.value); setParentCategory(''); }}
-              disabled={saving}
-            >
-              <option value="Parent category">Parent category</option>
-              <option value="Category">Category</option>
-            </select>
-            {categoryType === 'Category' ? (
-              <select
-                name="parentCategory"
-                className="form-select"
-                value={parentCategory}
-                onChange={(e) => setParentCategory(e.target.value)}
-                disabled={saving || loading}
-              >
-                <option value="">parent categories</option>
-                {categories.filter(cat =>
-                  cat.parentCategoryId === null &&
-                  cat.enabled &&
-                  cat.id.toString() !== id
-                ).map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input type="text" className="form-input" value="-" readOnly disabled />
-            )}
-            <div className="checkbox-container">
+
+            <div className="activate-section">
               <input
                 type="checkbox"
                 id="enableCategory"
-                name="enableCategory"
                 checked={enableCategory}
-                onChange={(e) => setEnableCategory(e.target.checked)}
+                onChange={e => setEnableCategory(e.target.checked)}
                 disabled={saving}
               />
-              <label htmlFor="enableCategory">Enable category</label>
+              <label htmlFor="enableCategory">Activate category</label>
             </div>
           </div>
-        </section>
-
-        {/* Custom Fields Section */}
-        {customFields.length > 0 && (
-          <section className="form-section" style={{ marginTop: '32px' }}>
-            <h3 className="section-title">Custom Fields</h3>
-            <div className="form-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-              {customFields.map((field) => (
-                <div key={field.id}>
-                  {field.fieldType === 'text' || field.fieldType === 'numeric' ? (
-                    <input
-                      type={field.fieldType === 'numeric' ? 'number' : 'text'}
-                      placeholder={field.name + (field.required ? ' *' : '')}
-                      className="form-input"
-                      value={customFieldValues[field.id] || ''}
-                      onChange={(e) => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
-                      required={field.required}
-                      disabled={saving}
-                    />
-                  ) : field.fieldType === 'dropdown' && field.dropdownOptions ? (
-                    <select
-                      className="form-select"
-                      value={customFieldValues[field.id] || ''}
-                      onChange={(e) => setCustomFieldValues({ ...customFieldValues, [field.id]: e.target.value })}
-                      required={field.required}
-                      disabled={saving}
-                    >
-                      <option value="">{field.name + (field.required ? ' *' : '')}</option>
-                      {field.dropdownOptions.split(',').map((option: string, idx: number) => (
-                        <option key={idx} value={option.trim()}>
-                          {option.trim()}
-                        </option>
-                      ))}
-                    </select>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Action Buttons */}
-        <div className="form-actions">
-          <button className="cancel-btn" onClick={handleCancel} disabled={saving}>
-            Cancel
-          </button>
-          <button className="save-btn" onClick={handleSave} disabled={saving || !categoryName.trim()}>
-            {saving ? 'UPDATING...' : 'UPDATE'}
-          </button>
+          <div className="form-actions">
+            <button className="cancel-btn" onClick={handleCancel} disabled={saving}>Cancel</button>
+            <button className="save-btn" onClick={handleSave} disabled={saving || !categoryName.trim()}>
+              {saving ? 'UPDATING...' : 'UPDATE'}
+            </button>
+          </div>
         </div>
       </main>
     </div>

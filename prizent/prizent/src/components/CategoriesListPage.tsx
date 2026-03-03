@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../contexts/CategoryContext';
 import { getCustomFields, getCustomFieldValues, CustomFieldResponse, CustomFieldValueResponse } from '../services/customFieldService';
 import './CategoriesListPage.css';
-// Force recompile v2 - hardcoded attributes added
 
 interface CategoryDisplay {
   id: number;
@@ -12,19 +11,22 @@ interface CategoryDisplay {
   status: 'Active' | 'Inactive';
 }
 
+// Recursive tree node component
+
 const CategoriesListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { categories, categoryTree, loading, error, fetchCategories, fetchCategoryTree, toggleCategoryStatus, deleteCategory } = useCategories();
+  const { categories, loading, error, fetchCategories, toggleCategoryStatus, deleteCategory } = useCategories();
   
   const [displayCategories, setDisplayCategories] = useState<CategoryDisplay[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [categoryCustomFields, setCategoryCustomFields] = useState<CustomFieldResponse[]>([]);
   const [categoryFieldValues, setCategoryFieldValues] = useState<Map<number, CustomFieldValueResponse[]>>(new Map());
+
   
   useEffect(() => {
     // CategoryContext automatically loads data - no manual fetch needed
-    // Just load custom fields for categories (module='c')
+    // Load custom fields for categories (module='c')
     const loadCustomFields = async () => {
       try {
         const fields = await getCustomFields('c');
@@ -35,7 +37,7 @@ const CategoriesListPage: React.FC = () => {
       }
     };
     loadCustomFields();
-  }, []); // No dependencies needed since context handles category loading
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch custom field values for all categories
   useEffect(() => {
@@ -98,7 +100,7 @@ const CategoriesListPage: React.FC = () => {
       console.error('Failed to toggle category status:', err);
     }
   };
-  
+
   const handleDelete = async (categoryId: number) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
@@ -196,8 +198,8 @@ const CategoriesListPage: React.FC = () => {
         </div>
 
         {/* Categories Table */}
-        <div className="categories-table-container">
-          <table className="categories-table">
+          <div className="categories-table-container">
+            <table className="categories-table">
             <thead>
               <tr>
                 <th>Category Name</th>

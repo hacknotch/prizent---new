@@ -28,9 +28,9 @@ const AddMarketplacePage: React.FC = () => {
   });
   
   // Cost slabs state
-  const [productCostSlabs, setProductCostSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
-  const [marketingSlabs, setMarketingSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
-  const [shippingSlabs, setShippingSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
+  const [productCostSlabs, setProductCostSlabs] = useState([{ from: '', to: '', value: '', valueType: 'A' as 'P' | 'A' }]);
+  const [marketingSlabs, setMarketingSlabs] = useState([{ from: '', to: '', value: '', valueType: 'A' as 'P' | 'A' }]);
+  const [shippingSlabs, setShippingSlabs] = useState([{ from: '', to: '', value: '', valueType: 'A' as 'P' | 'A' }]);
   
   // UI state
   const [loading, setLoading] = useState(false);
@@ -111,7 +111,7 @@ const AddMarketplacePage: React.FC = () => {
   }, []);
 
   // ── Brand mapping handlers ──────────────────────────────────────────────────
-  const emptySlabs = (vt: 'P' | 'A' = 'A'): BrandSlab[] => [{ from: '0', to: '0', value: '0', valueType: vt }];
+  const emptySlabs = (vt: 'P' | 'A' = 'A'): BrandSlab[] => [{ from: '', to: '', value: '', valueType: vt }];
 
   const addBrandMapping = () => {
     setBrandMappings(prev => [...prev, {
@@ -145,7 +145,7 @@ const AddMarketplacePage: React.FC = () => {
     const slabKey = `${category}Slabs` as keyof BrandMapping;
     setBrandMappings(prev => prev.map(m => {
       if (m.localId !== localId) return m;
-      return { ...m, [slabKey]: [...(m[slabKey] as BrandSlab[]), { from: '0', to: '0', value: '0', valueType: m[typeKey] as 'P' | 'A' }] };
+      return { ...m, [slabKey]: [...(m[slabKey] as BrandSlab[]), { from: '', to: '', value: '', valueType: m[typeKey] as 'P' | 'A' }] };
     }));
   };
 
@@ -174,7 +174,7 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const addProductCostSlab = () => {
-    setProductCostSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: productCostValueType }]);
+    setProductCostSlabs(prev => [...prev, { from: '', to: '', value: '', valueType: productCostValueType }]);
   };
 
   const removeProductCostSlab = (index: number) => {
@@ -191,7 +191,7 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const addMarketingSlab = () => {
-    setMarketingSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: marketingValueType }]);
+    setMarketingSlabs(prev => [...prev, { from: '', to: '', value: '', valueType: marketingValueType }]);
   };
 
   const removeMarketingSlab = (index: number) => {
@@ -208,7 +208,7 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const addShippingSlab = () => {
-    setShippingSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: shippingValueType }]);
+    setShippingSlabs(prev => [...prev, { from: '', to: '', value: '', valueType: shippingValueType }]);
   };
 
   const removeShippingSlab = (index: number) => {

@@ -319,7 +319,9 @@
 
 .add-category-page .form-input,
 .add-category-page .form-select {
-  width: 650px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   height: 46px;
   border: 1px solid #C1C1C1;
   border-radius: 6px;
