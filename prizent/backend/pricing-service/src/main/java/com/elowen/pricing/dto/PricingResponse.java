@@ -34,9 +34,10 @@ public class PricingResponse {
     private Double outputGst;        // sellingPrice × GST slab rate
     private Double inputGst;         // flat ₹ purchase GST paid by seller
     private Double gstDifference;    // outputGst - inputGst (positive = GST payable, negative = credit)
-    private Double netRealisation;   // sellingPrice - commission - shipping - marketing - outputGst
+    private Double netSellerAsp;     // sellingPrice × 100/(100+gstRate%) — base price ex-GST
+    private Double netRealisation;   // netSellerAsp - commission - shipping - marketing
     private Double profit;           // netRealisation - productCost + gstDifference
-    private Double profitPercentage; // (profit / productCost) * 100
+    private Double profitPercentage; // (profit / netSellerAsp) * 100
 
     // ── Factory ─────────────────────────────────────────────────────────────
 
@@ -46,7 +47,7 @@ public class PricingResponse {
             double sellingPrice,
             double commission, double shipping, double marketing,
             double outputGst, double inputGst, double gstDifference,
-            double netRealisation, double profit, double profitPercentage) {
+            double netSellerAsp, double netRealisation, double profit, double profitPercentage) {
 
         PricingResponse r  = new PricingResponse();
         r.productId        = productId;
@@ -63,6 +64,7 @@ public class PricingResponse {
         r.outputGst        = round(outputGst);
         r.inputGst         = round(inputGst);
         r.gstDifference    = round(gstDifference);
+        r.netSellerAsp     = round(netSellerAsp);
         r.netRealisation   = round(netRealisation);
         r.profit           = round(profit);
         r.profitPercentage = round(profitPercentage);
@@ -89,6 +91,7 @@ public class PricingResponse {
     public Double getOutputGst()       { return outputGst; }
     public Double getInputGst()        { return inputGst; }
     public Double getGstDifference()   { return gstDifference; }
+    public Double getNetSellerAsp()    { return netSellerAsp; }
     public Double getNetRealisation()  { return netRealisation; }
     public Double getProfit()          { return profit; }
     public Double getProfitPercentage(){ return profitPercentage; }

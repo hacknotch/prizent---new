@@ -31,8 +31,8 @@ public class PricingEngine {
     private static final Set<String> VALID_CATEGORIES =
             Set.of("COMMISSION", "SHIPPING", "MARKETING");
 
-    // GST slab: 5% when SP < ₹2064, 18% when SP >= ₹2064
-    private static final double GST_THRESHOLD = 2064.0;
+    // GST slab: 5% when SP < ₹2625, 18% when SP >= ₹2625  (GST is inclusive in SP/MRP)
+    private static final double GST_THRESHOLD = 2625.0;
     private static final double GST_RATE_LOW  = 0.05;
     private static final double GST_RATE_HIGH = 0.18;
 
@@ -168,35 +168,41 @@ public class PricingEngine {
         double shipping      = extractCost(costs, "SHIPPING",   sellingPrice);
         double marketing     = extractCost(costs, "MARKETING",  sellingPrice);
 
-        // GST accounting
-        double outputGst     = sellingPrice * computeGstRate(sellingPrice);
+        // GST is INCLUSIVE in the selling price (MRP includes GST)
+        // Formula: =AJ6-(AJ6*(IF(AJ6<2625,(100/105),(100/118))))
+        double gstRate       = computeGstRate(sellingPrice);
+        double netSellerAsp  = sellingPrice * 100.0 / (100.0 + gstRate * 100.0);  // SP × 100/(100+rate%)
+        double outputGst     = sellingPrice - netSellerAsp;                       // GST embedded in price
         double gstDifference = outputGst - inputGst;  // positive = GST payable, negative = credit
 
-        // Net realisation: SP minus all marketplace deductions and output GST
-        double netRealisation = sellingPrice - commission - shipping - marketing - outputGst;
+        // Net realisation: base price (ex-GST) minus all marketplace deductions
+        double netRealisation = netSellerAsp - commission - shipping - marketing;
 
         // Profit: net realisation minus cost, then adjust by GST difference
         double profit    = netRealisation - productCost + gstDifference;
-        double profitPct = productCost > 0 ? (profit / productCost) * 100 : 0;
+        double profitPct = netSellerAsp > 0 ? (profit / netSellerAsp) * 100 : 0;
 
         return PricingResponse.of(
                 product.getId(), product.getName(), product.getSkuCode(), productCost,
                 marketplace.getId(), marketplace.getName(),
                 sellingPrice, commission, shipping, marketing,
                 outputGst, inputGst, gstDifference,
-                netRealisation, profit, profitPct
+                netSellerAsp, netRealisation, profit, profitPct
         );
     }
 
     // ── Mode: PROFIT_PERCENT ─────────────────────────────────────────────────
     //
-    //  Derivation (with GST):
-    //    outputGst        = SP × gstRate
+    //  Derivation (GST is INCLUSIVE in SP — Excel: =SP-(SP*(100/105))):
+    //    netSellerAsp     = SP × 100/(100+gstRate%)        e.g. SP/1.05
+    //    outputGst        = SP - netSellerAsp              (GST embedded in price)
     //    gstDifference    = outputGst - inputGst
-    //    netRealisation   = SP - Σ%costs×SP - Σfixed - outputGst
+    //    netRealisation   = netSellerAsp - Σ%costs×SP - Σfixed
     //    profit           = netRealisation - cost + gstDifference
-    //                     = SP(1 - Σ%/100 - gstRate) - Σfixed - cost + inputGst + target
-    //    → SP = (targetProfit + Σfixed + cost - inputGst) / (1 - Σ%/100 - gstRate)
+    //                     = SP×100/105 - Σ%×SP - Σfixed - cost + SP×5/105 - inputGst
+    //                     = SP(105/105) - Σ%×SP - Σfixed - cost - inputGst   [GST cancels]
+    //                     = SP(1 - Σ%/100) - Σfixed - cost - inputGst
+    //    → SP = (targetProfit + Σfixed + cost + inputGst) / (1 - Σ%/100)
     //
     //  Slab-aware: tries each distinct price range to find one whose computed SP falls within it.
     //
@@ -423,7 +429,7 @@ public class PricingEngine {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Returns the GST slab rate: 5% if SP < ₹2064, 18% otherwise. */
+    /** Returns the GST slab rate: 5% if SP < ₹2625, 18% otherwise. (GST is inclusive in SP) */
     private double computeGstRate(double sellingPrice) {
         return sellingPrice < GST_THRESHOLD ? GST_RATE_LOW : GST_RATE_HIGH;
     }
