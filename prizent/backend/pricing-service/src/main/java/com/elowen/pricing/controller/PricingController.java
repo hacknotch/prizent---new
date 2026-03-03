@@ -4,6 +4,7 @@ import com.elowen.pricing.dto.*;
 import com.elowen.pricing.service.PricingEngine;
 import com.elowen.pricing.service.PricingVersionService;
 import jakarta.validation.Valid;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,5 +68,13 @@ public class PricingController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("pricing-service OK");
+    }
+
+    // ── DELETE /api/pricing/cache ─────────────────────────────────────────────
+    // Evicts all cached product/marketplace/effectiveCost data immediately.
+    @DeleteMapping("/cache")
+    @CacheEvict(allEntries = true, value = {"products", "marketplaces", "effectiveCosts"})
+    public ResponseEntity<String> evictCache() {
+        return ResponseEntity.ok("Cache cleared");
     }
 }
