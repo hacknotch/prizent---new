@@ -168,7 +168,7 @@ const ImportCategoriesPage: React.FC = () => {
 
   return (
     <div className="import-categories-page">
-      <main className="main-content">
+      <div className="import-main-content">
         <div className="scroll-area">
           {/* Header */}
           <header className="header">
@@ -297,7 +297,7 @@ const ImportCategoriesPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
