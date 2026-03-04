@@ -392,6 +392,42 @@
   margin: 0;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.import-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 3.75px 20px;
+  height: 42px;
+  background: #FFFFFF;
+  border: 2px solid #1E1E1E;
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Murecho', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: #1E1E1E;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.import-btn:hover {
+  background: #1E1E1E;
+  color: #FFFFFF;
+}
+
+.import-btn svg {
+  stroke: currentColor;
+}
+
 .add-category-btn {
   display: flex;
   align-items: center;

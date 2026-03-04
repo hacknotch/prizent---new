@@ -261,12 +261,21 @@ const CategoriesListPage: React.FC = () => {
             <p className="categories-count">{displayCategories.length} Total number of items</p>
           </div>
           
-          <button className="add-category-btn" onClick={handleAddNewCategory}>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 0V10M0 5H10" stroke="#FFFFFF" strokeWidth="2"/>
-            </svg>
-            ADD CATEGORY
-          </button>
+          <div className="header-actions">
+            <button className="import-btn" onClick={() => navigate('/import-categories')}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 1V9M7 9L10 6M7 9L4 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1 9V12C1 12.5523 1.44772 13 2 13H12C12.5523 13 13 12.5523 13 12V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              Import
+            </button>
+            <button className="add-category-btn" onClick={handleAddNewCategory}>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 0V10M0 5H10" stroke="#FFFFFF" strokeWidth="2"/>
+              </svg>
+              ADD CATEGORY
+            </button>
+          </div>
         </div>
 
         {/* Inline Form Section */}
