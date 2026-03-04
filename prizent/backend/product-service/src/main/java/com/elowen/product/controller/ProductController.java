@@ -118,19 +118,6 @@ public class ProductController {
     }
 
     /**
-     * Update product flag/currentType (Top Seller, Avg Seller, Non-Seller)
-     * PATCH /api/products/{id}/flag?currentType=T
-     */
-    @PatchMapping("/{id}/flag")
-    public ResponseEntity<ProductResponse> updateProductFlag(
-            @PathVariable Long id,
-            @RequestParam String currentType) {
-        
-        ProductResponse response = productService.updateProductFlag(id, currentType);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
      * Delete a product permanently
      * DELETE /api/products/{id}
      */
@@ -180,7 +167,6 @@ public class ProductController {
      */
     @GetMapping("/filter")
     public ResponseEntity<PagedResponse<ProductResponse>> filterProducts(
-            @RequestParam(required = false) String status,
             @RequestParam(required = false) Long brandId, 
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String search,
@@ -190,7 +176,7 @@ public class ProductController {
             @RequestParam(defaultValue = "desc") String direction) {
         
         PagedResponse<ProductResponse> products = productService.filterProducts(
-            status, brandId, categoryId, search, page, size, sortBy, direction
+            brandId, categoryId, search, page, size, sortBy, direction
         );
         return ResponseEntity.ok(products);
     }

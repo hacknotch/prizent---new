@@ -33,11 +33,10 @@ const ProductsListPage: React.FC = () => {
   const [productSkuCode, setProductSkuCode] = useState('');
   const [productCategoryId, setProductCategoryId] = useState<number>(0);
   const [marketplaceId, setMarketplaceId] = useState<number>(0);
-  const [productMrp, setProductMrp] = useState<number>(0);
-  const [productCost, setProductCost] = useState<number>(0);
-  const [productPriceSales, setProductPriceSales] = useState<number>(0);
-  const [productPriceNonSales, setProductPriceNonSales] = useState<number>(0);
-  const [productCurrentType, setProductCurrentType] = useState<'T' | 'A' | 'N'>('N');
+  const [productMrp, setProductMrp] = useState<string>('');
+  const [productCost, setProductCost] = useState<string>('');
+  const [productPriceSales, setProductPriceSales] = useState<string>('');
+  const [productPriceNonSales, setProductPriceNonSales] = useState<string>('');
   const [productEnabled, setProductEnabled] = useState(true);
   const [savingProduct, setSavingProduct] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -126,11 +125,10 @@ const ProductsListPage: React.FC = () => {
     setProductSkuCode('');
     setProductCategoryId(0);
     setMarketplaceId(0);
-    setProductMrp(0);
-    setProductCost(0);
-    setProductPriceSales(0);
-    setProductPriceNonSales(0);
-    setProductCurrentType('N');
+    setProductMrp('');
+    setProductCost('');
+    setProductPriceSales('');
+    setProductPriceNonSales('');
     setProductEnabled(true);
     setShowFormSection(true);
   };
@@ -139,14 +137,15 @@ const ProductsListPage: React.FC = () => {
     setFormMode('edit');
     setEditingProduct(product);
     setProductName(product.name);
+    setProductNumber(product.productNumber || '');
+    setStyleCode(product.styleCode || '');
     setProductBrandId(product.brandId);
     setProductSkuCode(product.skuCode);
     setProductCategoryId(product.categoryId);
-    setProductMrp(product.mrp);
-    setProductCost(product.productCost);
-    setProductPriceSales(product.proposedSellingPriceSales);
-    setProductPriceNonSales(product.proposedSellingPriceNonSales);
-    setProductCurrentType(product.currentType);
+    setProductMrp(product.mrp != null ? String(product.mrp) : '');
+    setProductCost(product.productCost != null ? String(product.productCost) : '');
+    setProductPriceSales(product.proposedSellingPriceSales != null ? String(product.proposedSellingPriceSales) : '');
+    setProductPriceNonSales(product.proposedSellingPriceNonSales != null ? String(product.proposedSellingPriceNonSales) : '');
     setProductEnabled(product.enabled);
     setShowFormSection(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -162,11 +161,10 @@ const ProductsListPage: React.FC = () => {
     setProductSkuCode('');
     setProductCategoryId(0);
     setMarketplaceId(0);
-    setProductMrp(0);
-    setProductCost(0);
-    setProductPriceSales(0);
-    setProductPriceNonSales(0);
-    setProductCurrentType('N');
+    setProductMrp('');
+    setProductCost('');
+    setProductPriceSales('');
+    setProductPriceNonSales('');
     setProductEnabled(true);
   };
 
@@ -189,21 +187,39 @@ const ProductsListPage: React.FC = () => {
       
       const productData = {
         name: productName,
+        productNumber: productNumber || undefined,
+        styleCode: styleCode || undefined,
         brandId: productBrandId,
         skuCode: productSkuCode,
         categoryId: productCategoryId,
-        mrp: productMrp,
-        productCost: productCost,
-        proposedSellingPriceSales: productPriceSales,
-        proposedSellingPriceNonSales: productPriceNonSales,
-        currentType: productCurrentType
+        mrp: parseFloat(productMrp) || 0,
+        productCost: parseFloat(productCost) || 0,
+        proposedSellingPriceSales: parseFloat(productPriceSales) || 0,
+        proposedSellingPriceNonSales: parseFloat(productPriceNonSales) || 0,
+        enabled: productEnabled
       };
 
       if (formMode === 'edit' && editingProduct) {
         await productService.updateProduct(editingProduct.id, productData);
+        if (marketplaceId) {
+          const mp = marketplaces.find(m => m.id === marketplaceId);
+          await productService.saveMarketplaceMappings(editingProduct.id, [{
+            marketplaceId,
+            marketplaceName: mp?.name || '',
+            productMarketplaceName: ''
+          }]);
+        }
         alert('Product updated successfully!');
       } else {
-        await productService.createProduct(productData);
+        const created = await productService.createProduct(productData);
+        if (marketplaceId && created?.id) {
+          const mp = marketplaces.find(m => m.id === marketplaceId);
+          await productService.saveMarketplaceMappings(created.id, [{
+            marketplaceId,
+            marketplaceName: mp?.name || '',
+            productMarketplaceName: ''
+          }]);
+        }
         alert('Product created successfully!');
       }
       
@@ -326,7 +342,7 @@ const ProductsListPage: React.FC = () => {
           </div>
 
           <div className="products-toolbar-actions">
-            <button className="import-btn" type="button">
+            <button className="import-btn" type="button" onClick={() => navigate('/import-products')}>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9.54546 4.285C9.42472 4.285 9.3093 4.33294 9.22408 4.41817C9.13885 4.50339 9.09091 4.6188 9.09091 4.73955V8.33333C9.09032 8.75177 8.75177 9.09032 8.33333 9.09091H1.66667C1.24823 9.09032 0.909682 8.75177 0.909091 8.33333V1.66667C0.909683 1.24823 1.24823 0.909682 1.66667 0.909091H5.26046C5.51139 0.909091 5.715 0.705485 5.715 0.454545C5.715 0.203606 5.51139 0 5.26046 0H1.66667C0.746333 0.00118364 0.00121212 0.746333 0 1.66667V8.33333C0.00118364 9.25367 0.746333 9.99879 1.66667 10H8.33333C9.25367 9.99882 9.99879 9.25367 10 8.33333V4.73955C10 4.61881 9.95206 4.50339 9.86683 4.41817C9.7816 4.33294 9.6662 4.285 9.54546 4.285Z" fill="#1E1E1E" />
                 <path d="M9.2424 0H6.97558C6.72464 0 6.52104 0.203606 6.52104 0.454545C6.52104 0.705485 6.72464 0.909091 6.97558 0.909091H8.44813L4.67858 4.67864C4.50102 4.8562 4.50102 5.14383 4.67858 5.32139C4.85614 5.49895 5.14378 5.49895 5.32134 5.32139L9.09088 1.55185V3.02439C9.09088 3.27533 9.29449 3.47894 9.54543 3.47894C9.79637 3.47894 9.99997 3.27533 9.99997 3.02439V0.757576C9.99938 0.339136 9.66084 0.000590909 9.2424 0Z" fill="#1E1E1E" />
@@ -450,7 +466,7 @@ const ProductsListPage: React.FC = () => {
                     type="number"
                     className="form-input"
                     value={productMrp}
-                    onChange={(e) => setProductMrp(Number(e.target.value))}
+                    onChange={(e) => setProductMrp(e.target.value)}
                     placeholder="Enter MRP"
                     min="0"
                     step="0.01"
@@ -465,7 +481,7 @@ const ProductsListPage: React.FC = () => {
                     type="number"
                     className="form-input"
                     value={productCost}
-                    onChange={(e) => setProductCost(Number(e.target.value))}
+                    onChange={(e) => setProductCost(e.target.value)}
                     placeholder="Enter product cost"
                     min="0"
                     step="0.01"
@@ -478,7 +494,7 @@ const ProductsListPage: React.FC = () => {
                     type="number"
                     className="form-input"
                     value={productPriceSales}
-                    onChange={(e) => setProductPriceSales(Number(e.target.value))}
+                    onChange={(e) => setProductPriceSales(e.target.value)}
                     placeholder="Enter ASP sales"
                     min="0"
                     step="0.01"
@@ -491,13 +507,23 @@ const ProductsListPage: React.FC = () => {
                     type="number"
                     className="form-input"
                     value={productPriceNonSales}
-                    onChange={(e) => setProductPriceNonSales(Number(e.target.value))}
+                    onChange={(e) => setProductPriceNonSales(e.target.value)}
                     placeholder="Enter ASP non-sales"
                     min="0"
                     step="0.01"
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="activate-section">
+              <input
+                type="checkbox"
+                id="enable-product"
+                checked={productEnabled}
+                onChange={(e) => setProductEnabled(e.target.checked)}
+              />
+              <label htmlFor="enable-product">Enable Product</label>
             </div>
 
             <div className="form-section-footer">

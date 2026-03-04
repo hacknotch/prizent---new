@@ -1,7 +1,6 @@
 package com.elowen.product.dto;
 
 import com.elowen.product.entity.Product;
-import com.elowen.product.entity.ProductType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +14,8 @@ public class ProductResponse {
 
     private Long id;
     private String name;
+    private String productNumber;
+    private String styleCode;
     private Long brandId;
     private String skuCode;
     private Long categoryId;
@@ -22,7 +23,6 @@ public class ProductResponse {
     private BigDecimal productCost;
     private BigDecimal proposedSellingPriceSales;
     private BigDecimal proposedSellingPriceNonSales;
-    private ProductType currentType;
     private Boolean enabled;
     private LocalDateTime createDateTime;
     private Long updatedBy;
@@ -34,6 +34,8 @@ public class ProductResponse {
     public ProductResponse(Product product) {
         this.id = product.getId();
         this.name = product.getName();
+        this.productNumber = product.getProductNumber();
+        this.styleCode = product.getStyleCode();
         this.brandId = product.getBrandId();
         this.skuCode = product.getSkuCode();
         this.categoryId = product.getCategoryId();
@@ -41,7 +43,6 @@ public class ProductResponse {
         this.productCost = product.getProductCost();
         this.proposedSellingPriceSales = product.getProposedSellingPriceSales();
         this.proposedSellingPriceNonSales = product.getProposedSellingPriceNonSales();
-        this.currentType = product.getCurrentType();
         this.enabled = product.getEnabled();
         this.createDateTime = product.getCreateDateTime();
         this.updatedBy = product.getUpdatedBy();
@@ -49,7 +50,7 @@ public class ProductResponse {
 
     public ProductResponse(Long id, String name, Long brandId, String skuCode, Long categoryId,
                           BigDecimal mrp, BigDecimal productCost, BigDecimal proposedSellingPriceSales,
-                          BigDecimal proposedSellingPriceNonSales, ProductType currentType, 
+                          BigDecimal proposedSellingPriceNonSales,
                           Boolean enabled, LocalDateTime createDateTime, Long updatedBy) {
         this.id = id;
         this.name = name;
@@ -60,7 +61,6 @@ public class ProductResponse {
         this.productCost = productCost;
         this.proposedSellingPriceSales = proposedSellingPriceSales;
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales;
-        this.currentType = currentType;
         this.enabled = enabled;
         this.createDateTime = createDateTime;
         this.updatedBy = updatedBy;
@@ -77,6 +77,22 @@ public class ProductResponse {
 
     public String getName() {
         return name;
+    }
+
+    public String getProductNumber() {
+        return productNumber;
+    }
+
+    public void setProductNumber(String productNumber) {
+        this.productNumber = productNumber;
+    }
+
+    public String getStyleCode() {
+        return styleCode;
+    }
+
+    public void setStyleCode(String styleCode) {
+        this.styleCode = styleCode;
     }
 
     public void setName(String name) {
@@ -139,14 +155,6 @@ public class ProductResponse {
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales;
     }
 
-    public ProductType getCurrentType() {
-        return currentType;
-    }
-
-    public void setCurrentType(ProductType currentType) {
-        this.currentType = currentType;
-    }
-
     public Boolean getEnabled() {
         return enabled;
     }
@@ -185,7 +193,6 @@ public class ProductResponse {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", skuCode='" + skuCode + '\'' +
-                ", currentType=" + currentType +
                 ", enabled=" + enabled +
                 '}';
     }

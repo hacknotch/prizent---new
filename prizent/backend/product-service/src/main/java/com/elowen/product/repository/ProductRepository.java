@@ -1,7 +1,6 @@
 package com.elowen.product.repository;
 
 import com.elowen.product.entity.Product;
-import com.elowen.product.entity.ProductType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -66,11 +65,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // FILTER METHODS FOR PART 2
 
     /**
-     * Filter products by client ID, enabled status and product type
-     */
-    Page<Product> findByClientIdAndEnabledTrueAndCurrentType(Integer clientId, ProductType currentType, Pageable pageable);
-
-    /**
      * Filter products by client ID, enabled status and brand ID
      */
     Page<Product> findByClientIdAndEnabledTrueAndBrandId(Integer clientId, Long brandId, Pageable pageable);
@@ -95,13 +89,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * This allows combining multiple filters efficiently with safe null checks
      */
     @Query("SELECT p FROM Product p WHERE p.clientId = :clientId AND p.enabled = true " +
-           "AND (:status IS NULL OR p.currentType = :status) " +
            "AND (:brandId IS NULL OR p.brandId = :brandId) " +
            "AND (:categoryId IS NULL OR p.categoryId = :categoryId) " +
            "AND (:search IS NULL OR (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "OR LOWER(p.skuCode) LIKE LOWER(CONCAT('%', :search, '%'))))")
     Page<Product> findByMultipleFilters(@Param("clientId") Integer clientId,
-                                       @Param("status") ProductType status,
                                        @Param("brandId") Long brandId,
                                        @Param("categoryId") Long categoryId,
                                        @Param("search") String search,

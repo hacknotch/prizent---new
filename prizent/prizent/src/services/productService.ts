@@ -35,6 +35,8 @@ export interface Product {
   id: number;
   clientId: number;
   name: string;
+  productNumber?: string;
+  styleCode?: string;
   brandId: number;
   skuCode: string;
   categoryId: number;
@@ -42,7 +44,6 @@ export interface Product {
   productCost: number;
   proposedSellingPriceSales: number;
   proposedSellingPriceNonSales: number;
-  currentType: 'T' | 'A' | 'N';
   enabled: boolean;
   createDateTime: string;
   updatedBy: number;
@@ -52,6 +53,8 @@ export interface Product {
 // Create product request interface
 export interface CreateProductRequest {
   name: string;
+  productNumber?: string;
+  styleCode?: string;
   brandId: number;
   skuCode: string;
   categoryId: number;
@@ -59,13 +62,15 @@ export interface CreateProductRequest {
   productCost: number;
   proposedSellingPriceSales: number;
   proposedSellingPriceNonSales: number;
-  currentType: 'T' | 'A' | 'N';
+  enabled?: boolean;
   customFields?: CustomFieldValue[];
 }
 
 // Update product request interface
 export interface UpdateProductRequest {
   name: string;
+  productNumber?: string;
+  styleCode?: string;
   brandId: number;
   skuCode: string;
   categoryId: number;
@@ -73,7 +78,7 @@ export interface UpdateProductRequest {
   productCost: number;
   proposedSellingPriceSales: number;
   proposedSellingPriceNonSales: number;
-  currentType: 'T' | 'A' | 'N';
+  enabled?: boolean;
 }
 
 // Paged response interface matching Spring Boot PagedResponse

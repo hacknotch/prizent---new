@@ -20,8 +20,7 @@ const AddProductPage: React.FC = () => {
     mrp: 0,
     productCost: 0,
     proposedSellingPriceSales: 0,
-    proposedSellingPriceNonSales: 0,
-    currentType: 'A'
+    proposedSellingPriceNonSales: 0
   });
   const [enabled, setEnabled] = useState(false);
   const [parentCategoryId, setParentCategoryId] = useState<number>(0);

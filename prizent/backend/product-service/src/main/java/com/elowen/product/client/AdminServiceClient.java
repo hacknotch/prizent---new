@@ -208,4 +208,46 @@ public class AdminServiceClient {
         
         return response;
     }
+
+    // ── Custom Field Definitions ──────────────────────────────────────────────
+
+    /**
+     * Fetch all enabled custom field *definitions* for the given module from
+     * admin-service.  Used to:
+     * <ul>
+     *   <li>Generate the import Excel template (add one column per custom field)</li>
+     *   <li>Map custom-field column headers back to fieldIds during import</li>
+     * </ul>
+     *
+     * @param module    module code, e.g. {@code "p"} for products
+     * @param authToken Bearer token forwarded to admin-service
+     * @return list of raw custom-field definition maps; empty on error (non-fatal)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getCustomFieldDefinitions(String module, String authToken) {
+        try {
+            String url = adminServiceUrl + "/custom-fields?module=" + module + "&enabledOnly=true";
+
+            HttpHeaders headers = new HttpHeaders();
+            if (authToken != null && !authToken.isEmpty()) {
+                headers.set("Authorization", authToken);
+            }
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, Map.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Object cf = response.getBody().get("customFields");
+                if (cf instanceof List) {
+                    return (List<Map<String, Object>>) cf;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch custom field definitions from admin-service (module={}): {}",
+                    module, e.getMessage());
+        }
+        return new ArrayList<>();
+    }
 }
+

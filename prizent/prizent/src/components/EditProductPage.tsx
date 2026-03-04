@@ -22,8 +22,7 @@ const EditProductPage: React.FC = () => {
     mrp: 0,
     productCost: 0,
     proposedSellingPriceSales: 0,
-    proposedSellingPriceNonSales: 0,
-    currentType: 'A'
+    proposedSellingPriceNonSales: 0
   });
   const [enabled, setEnabled] = useState(false);
   const [originalEnabled, setOriginalEnabled] = useState(false);
@@ -125,8 +124,7 @@ const EditProductPage: React.FC = () => {
           mrp: product.mrp || 0,
           productCost: product.productCost || 0,
           proposedSellingPriceSales: product.proposedSellingPriceSales || 0,
-          proposedSellingPriceNonSales: product.proposedSellingPriceNonSales || 0,
-          currentType: product.currentType || 'A'
+          proposedSellingPriceNonSales: product.proposedSellingPriceNonSales || 0
         });
         setEnabled(product.enabled || false);
         setOriginalEnabled(product.enabled || false);

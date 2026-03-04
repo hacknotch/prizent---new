@@ -1,6 +1,5 @@
 package com.elowen.product.dto;
 
-import com.elowen.product.entity.ProductType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +18,12 @@ public class CreateProductRequest {
     @NotBlank(message = "Product name is required")
     @Size(max = 255, message = "Product name must not exceed 255 characters")
     private String name;
+
+    @Size(max = 100)
+    private String productNumber;
+
+    @Size(max = 100)
+    private String styleCode;
 
     @NotNull(message = "Brand ID is required")
     private Long brandId;
@@ -42,8 +47,7 @@ public class CreateProductRequest {
     @DecimalMin(value = "0.0", inclusive = true, message = "Proposed selling price (non-sales) must be greater than or equal to 0")
     private BigDecimal proposedSellingPriceNonSales = BigDecimal.ZERO;
 
-    @NotNull(message = "Current type is required")
-    private ProductType currentType;
+    private Boolean enabled = Boolean.TRUE;
     
     @Valid
     private List<CustomFieldValueRequest> customFields;
@@ -53,7 +57,7 @@ public class CreateProductRequest {
 
     public CreateProductRequest(String name, Long brandId, String skuCode, Long categoryId,
                                BigDecimal mrp, BigDecimal productCost, BigDecimal proposedSellingPriceSales,
-                               BigDecimal proposedSellingPriceNonSales, ProductType currentType) {
+                               BigDecimal proposedSellingPriceNonSales) {
         this.name = name;
         this.brandId = brandId;
         this.skuCode = skuCode;
@@ -62,7 +66,6 @@ public class CreateProductRequest {
         this.productCost = productCost;
         this.proposedSellingPriceSales = proposedSellingPriceSales;
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales;
-        this.currentType = currentType;
     }
 
     // Getters and Setters
@@ -72,6 +75,22 @@ public class CreateProductRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getProductNumber() {
+        return productNumber;
+    }
+
+    public void setProductNumber(String productNumber) {
+        this.productNumber = productNumber;
+    }
+
+    public String getStyleCode() {
+        return styleCode;
+    }
+
+    public void setStyleCode(String styleCode) {
+        this.styleCode = styleCode;
     }
 
     public Long getBrandId() {
@@ -130,12 +149,12 @@ public class CreateProductRequest {
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales;
     }
 
-    public ProductType getCurrentType() {
-        return currentType;
+    public Boolean getEnabled() {
+        return enabled;
     }
 
-    public void setCurrentType(ProductType currentType) {
-        this.currentType = currentType;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
     
     public List<CustomFieldValueRequest> getCustomFields() {
@@ -153,7 +172,6 @@ public class CreateProductRequest {
                 ", brandId=" + brandId +
                 ", skuCode='" + skuCode + '\'' +
                 ", categoryId=" + categoryId +
-                ", currentType=" + currentType +
                 '}';
     }
 }

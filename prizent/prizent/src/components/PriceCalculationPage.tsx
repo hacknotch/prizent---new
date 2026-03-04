@@ -176,7 +176,7 @@ const PriceCalculationPage: React.FC = () => {
                 : 'Enter selling price to see margin'}
             </p>
           </div>
-          {product && <div className="top-seller-badge">{product.currentType === 'T' ? 'Top Seller' : product.currentType === 'A' ? 'Avg Seller' : 'Non-Seller'}</div>}
+
         </div>
 
         {/* Select Pricing Mode */}

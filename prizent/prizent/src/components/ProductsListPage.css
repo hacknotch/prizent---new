@@ -492,6 +492,32 @@
   color: #000000;
 }
 
+.activate-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0 24px;
+}
+
+.activate-section input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  border: 1px solid #454545;
+  border-radius: 3px;
+}
+
+.activate-section label {
+  font-family: 'Murecho', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+  color: #7C7C7C;
+  cursor: pointer;
+}
+
 .form-section-footer {
   display: flex;
   justify-content: flex-end;

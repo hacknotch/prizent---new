@@ -10,7 +10,6 @@ import com.elowen.product.dto.ProductResponse;
 import com.elowen.product.dto.UpdateProductRequest;
 import com.elowen.product.entity.Product;
 import com.elowen.product.entity.ProductMarketplaceMapping;
-import com.elowen.product.entity.ProductType;
 import com.elowen.product.exception.DuplicateSkuException;
 import com.elowen.product.exception.ProductNotFoundException;
 import com.elowen.product.repository.ProductMarketplaceMappingRepository;
@@ -49,7 +48,7 @@ public class ProductService {
     
     // Whitelist of allowed sort fields for security
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
-        "name", "mrp", "createDateTime", "currentType"
+        "name", "mrp", "createDateTime"
     );
 
     @Autowired
@@ -89,7 +88,6 @@ public class ProductService {
         String normalizedSku = normalizeSkuCode(request.getSkuCode());
         
         // Validate business rules
-        validateProductType(request.getCurrentType());
         validatePricesStrict(request.getMrp(), request.getProductCost(), 
                       request.getProposedSellingPriceSales(), request.getProposedSellingPriceNonSales());
         
@@ -109,9 +107,14 @@ public class ProductService {
             request.getProductCost(),
             request.getProposedSellingPriceSales(),
             request.getProposedSellingPriceNonSales(),
-            request.getCurrentType(),
             userId
         );
+
+        product.setProductNumber(request.getProductNumber());
+        product.setStyleCode(request.getStyleCode());
+        if (request.getEnabled() != null) {
+            product.setEnabled(request.getEnabled());
+        }
 
         // Save product to database
         Product savedProduct;
@@ -260,7 +263,6 @@ public class ProductService {
         String normalizedSku = normalizeSkuCode(request.getSkuCode());
         
         // Validate business rules
-        validateProductType(request.getCurrentType());
         validatePricesStrict(request.getMrp(), request.getProductCost(), 
                       request.getProposedSellingPriceSales(), request.getProposedSellingPriceNonSales());
 
@@ -278,7 +280,11 @@ public class ProductService {
         existingProduct.setProductCost(request.getProductCost());
         existingProduct.setProposedSellingPriceSales(request.getProposedSellingPriceSales());
         existingProduct.setProposedSellingPriceNonSales(request.getProposedSellingPriceNonSales());
-        existingProduct.setCurrentType(request.getCurrentType());
+        existingProduct.setProductNumber(request.getProductNumber());
+        existingProduct.setStyleCode(request.getStyleCode());
+        if (request.getEnabled() != null) {
+            existingProduct.setEnabled(request.getEnabled());
+        }
         existingProduct.setUpdatedBy(userId);
 
         try {
@@ -309,32 +315,6 @@ public class ProductService {
             .orElseThrow(() -> new ProductNotFoundException(id));
 
         product.setEnabled(enabled);
-        product.setUpdatedBy(userId);
-
-        Product savedProduct = productRepository.save(product);
-        return new ProductResponse(savedProduct);
-    }
-
-    /**
-     * Update product flag/currentType (Top Seller, Avg Seller, Non-Seller)
-     */
-    public ProductResponse updateProductFlag(Long id, String currentType) {
-        UserPrincipal userPrincipal = getCurrentUserPrincipal();
-        Integer clientId = userPrincipal.getClientId();
-        Long userId = userPrincipal.getId();
-
-        Product product = productRepository.findByIdAndClientId(id, clientId)
-            .orElseThrow(() -> new ProductNotFoundException(id));
-
-        // Validate currentType
-        ProductType type;
-        try {
-            type = ProductType.valueOf(currentType);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid currentType: " + currentType + ". Allowed values: T, A, N");
-        }
-
-        product.setCurrentType(type);
         product.setUpdatedBy(userId);
 
         Product savedProduct = productRepository.save(product);
@@ -373,17 +353,11 @@ public class ProductService {
      * PART 2 Implementation with enhanced validation
      */
     @Transactional(readOnly = true)
-    public PagedResponse<ProductResponse> filterProducts(String status, Long brandId, Long categoryId, 
+    public PagedResponse<ProductResponse> filterProducts(Long brandId, Long categoryId, 
                                                String search, int page, int size, 
                                                String sortBy, String direction) {
         UserPrincipal userPrincipal = getCurrentUserPrincipal();
         Integer clientId = userPrincipal.getClientId();
-
-        // Convert string status to ProductType safely with enhanced handling
-        ProductType statusType = null;
-        if (status != null && !status.trim().isEmpty()) {
-            statusType = convertToProductTypeEnhanced(status);
-        }
 
         // Validate and set up sorting with whitelist protection
         String validSortBy = validateSortFieldWhitelist(sortBy);
@@ -394,7 +368,7 @@ public class ProductService {
 
         // Use the multi-filter query for efficiency
         Page<Product> products = productRepository.findByMultipleFilters(
-            clientId, statusType, brandId, categoryId, search, pageable
+            clientId, brandId, categoryId, search, pageable
         );
         Page<ProductResponse> responsePage = products.map(ProductResponse::new);
         
@@ -501,25 +475,11 @@ public class ProductService {
     // PART 3: ENHANCED ENUM HANDLING
 
     /**
-     * Enhanced ProductType conversion with case-insensitive handling
+     * Enhanced ProductType conversion (legacy method - removed)
      */
-    private ProductType convertToProductTypeEnhanced(String typeStr) {
-        if (typeStr == null || typeStr.trim().isEmpty()) {
-            throw new IllegalArgumentException("Product type is required");
-        }
-        
-        String normalizedType = typeStr.trim().toUpperCase();
-        
-        try {
-            ProductType type = ProductType.valueOf(normalizedType);
-            // Double-check only T, A, N are allowed
-            if (type != ProductType.T && type != ProductType.A && type != ProductType.N) {
-                throw new IllegalArgumentException("Product type must be one of: T, A, N");
-            }
-            return type;
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid product type '" + typeStr + "'. Must be one of: T (Trade), A (Active), N (Non-active)");
-        }
+    @SuppressWarnings("unused")
+    private Void convertToProductTypeEnhanced_removed() {
+        return null;
     }
 
     // PART 4: SORT FIELD WHITELIST PROTECTION
@@ -566,42 +526,19 @@ public class ProductService {
     // These methods are currently unused but may be needed for different validation strategies
 
     /**
-     * Validate product type enum (legacy method)
+     * Validate product type enum (legacy method - kept for reference)
      */
     @SuppressWarnings("unused")
-    private void validateProductType(ProductType currentType) {
-        if (currentType == null) {
-            throw new IllegalArgumentException("Current type is required");
-        }
-        
-        // Ensure only valid enum values are allowed (T, A, N)
-        if (currentType != ProductType.T && currentType != ProductType.A && currentType != ProductType.N) {
-            throw new IllegalArgumentException("Current type must be one of: T, A, N");
-        }
+    private void validateProductType_removed() {
+        // currentType field removed
     }
 
     /**
-     * Convert string to ProductType enum safely (legacy method)
-     * Throws proper exception if invalid
+     * Convert string to ProductType enum safely (legacy method - removed)
      */
     @SuppressWarnings("unused")
-    private ProductType convertToProductType(String typeStr) {
-        if (typeStr == null || typeStr.trim().isEmpty()) {
-            throw new IllegalArgumentException("Product type is required");
-        }
-        
-        String normalizedType = typeStr.trim().toUpperCase();
-        
-        try {
-            ProductType type = ProductType.valueOf(normalizedType);
-            // Double-check only T, A, N are allowed
-            if (type != ProductType.T && type != ProductType.A && type != ProductType.N) {
-                throw new IllegalArgumentException("Product type must be one of: T, A, N");
-            }
-            return type;
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid product type '" + typeStr + "'. Must be one of: T, A, N");
-        }
+    private String convertToProductType_removed() {
+        return null;
     }
 
     /**
@@ -633,7 +570,7 @@ public class ProductService {
             case "skucode", "sku_code" -> "skuCode";
             case "mrp" -> "mrp";
             case "productcost", "product_cost" -> "productCost";
-            case "currenttype", "current_type" -> "currentType";
+            case "currenttype", "current_type" -> "createDateTime";
             case "createdatetime", "create_date_time" -> "createDateTime";
             case "brandid", "brand_id" -> "brandId";
             case "categoryid", "category_id" -> "categoryId";

@@ -30,6 +30,14 @@ public class Product {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
+    @Size(max = 100)
+    @Column(name = "product_number", length = 100)
+    private String productNumber;
+
+    @Size(max = 100)
+    @Column(name = "style_code", length = 100)
+    private String styleCode;
+
     /**
      * Brand ID reference - validation deferred to external admin-service
      * Cross-service validation not allowed per architectural rules
@@ -69,11 +77,6 @@ public class Product {
     @Column(name = "proposed_selling_price_non_sales", precision = 12, scale = 2)
     private BigDecimal proposedSellingPriceNonSales = BigDecimal.ZERO;
 
-    @NotNull(message = "Current type is required")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "current_type", nullable = false, length = 1)
-    private ProductType currentType;
-
     @Column(name = "enabled", nullable = false)
     private Boolean enabled = true;
 
@@ -89,7 +92,7 @@ public class Product {
     public Product(Integer clientId, String name, Long brandId, String skuCode, 
                    Long categoryId, BigDecimal mrp, BigDecimal productCost,
                    BigDecimal proposedSellingPriceSales, BigDecimal proposedSellingPriceNonSales,
-                   ProductType currentType, Long updatedBy) {
+                   Long updatedBy) {
         this.clientId = clientId;
         this.name = name;
         this.brandId = brandId;
@@ -99,7 +102,6 @@ public class Product {
         this.productCost = productCost != null ? productCost : BigDecimal.ZERO;
         this.proposedSellingPriceSales = proposedSellingPriceSales != null ? proposedSellingPriceSales : BigDecimal.ZERO;
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales != null ? proposedSellingPriceNonSales : BigDecimal.ZERO;
-        this.currentType = currentType;
         this.updatedBy = updatedBy;
         this.enabled = true;
     }
@@ -132,6 +134,22 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getProductNumber() {
+        return productNumber;
+    }
+
+    public void setProductNumber(String productNumber) {
+        this.productNumber = productNumber;
+    }
+
+    public String getStyleCode() {
+        return styleCode;
+    }
+
+    public void setStyleCode(String styleCode) {
+        this.styleCode = styleCode;
     }
 
     public Long getBrandId() {
@@ -190,14 +208,6 @@ public class Product {
         this.proposedSellingPriceNonSales = proposedSellingPriceNonSales != null ? proposedSellingPriceNonSales : BigDecimal.ZERO;
     }
 
-    public ProductType getCurrentType() {
-        return currentType;
-    }
-
-    public void setCurrentType(ProductType currentType) {
-        this.currentType = currentType;
-    }
-
     public Boolean getEnabled() {
         return enabled;
     }
@@ -229,7 +239,6 @@ public class Product {
                 ", clientId=" + clientId +
                 ", name='" + name + '\'' +
                 ", skuCode='" + skuCode + '\'' +
-                ", currentType=" + currentType +
                 ", enabled=" + enabled +
                 '}';
     }
