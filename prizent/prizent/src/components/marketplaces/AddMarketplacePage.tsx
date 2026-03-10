@@ -77,15 +77,18 @@ const AddMarketplacePage: React.FC = () => {
   const [shippingFlatValue, setShippingFlatValue] = useState('0');
   const [marketingFlatValue, setMarketingFlatValue] = useState('0');
   const [fixedFeeFlatValue, setFixedFeeFlatValue] = useState('0');
+  const [commissionFlatValue, setCommissionFlatValue] = useState('0');
   
   // Value types for flat panels (% or Rs toggle)
   const [shippingFlatValueType, setShippingFlatValueType] = useState<'P' | 'A'>('A');
   const [marketingFlatValueType, setMarketingFlatValueType] = useState<'P' | 'A'>('A');
   const [fixedFeeFlatValueType, setFixedFeeFlatValueType] = useState<'P' | 'A'>('A');
+  const [commissionFlatValueType, setCommissionFlatValueType] = useState<'P' | 'A'>('A');
   
   // Value types for slab table toggles (% or Rs toggle)
   const [marketingSlabValueType, setMarketingSlabValueType] = useState<'P' | 'A'>('A');
   const [shippingSlabValueType, setShippingSlabValueType] = useState<'P' | 'A'>('A');
+  const [commissionSlabValueType, setCommissionSlabValueType] = useState<'P' | 'A'>('A');
   
   // UI state
   const [loading, setLoading] = useState(false);
@@ -850,7 +853,37 @@ const AddMarketplacePage: React.FC = () => {
             </label>
           </div>
 
+          {/* Flat Based Panel */}
+          {productCostValueType === 'A' && (
+            <div className="royalty-panel">
+              <div className="royalty-toggle-wrapper">
+                <span className="royalty-toggle-label">%</span>
+                <label className="switch">
+                  <input 
+                    type="checkbox" 
+                    checked={commissionFlatValueType === 'A'}
+                    onChange={() => setCommissionFlatValueType(commissionFlatValueType === 'P' ? 'A' : 'P')}
+                  />
+                  <span className="slider"></span>
+                </label>
+                <span className="royalty-toggle-label">Rs</span>
+              </div>
+              <div className="royalty-content">
+                <label className="royalty-label">Value :</label>
+                <input 
+                  className="royalty-input" 
+                  type="text" 
+                  placeholder="0" 
+                  value={commissionFlatValue}
+                  onChange={e => setCommissionFlatValue(validateNumericInput(e.target.value))}
+                />
+                <span className="royalty-unit">Rs</span>
+              </div>
+            </div>
+          )}
+
           {/* Commission Table */}
+          {productCostValueType === 'P' && (
           <div className="commission-panel">
             {/* Table Header */}
             <div className="commission-table-header">
@@ -866,8 +899,8 @@ const AddMarketplacePage: React.FC = () => {
                 <label className="switch">
                   <input
                     type="checkbox"
-                    checked={productCostValueType === 'A'}
-                    onChange={e => handleProductCostValueTypeChange(e.target.checked ? 'A' : 'P')}
+                    checked={commissionSlabValueType === 'A'}
+                    onChange={e => setCommissionSlabValueType(e.target.checked ? 'A' : 'P')}
                   />
                   <span className="slider" />
                 </label>
@@ -910,6 +943,7 @@ const AddMarketplacePage: React.FC = () => {
               <span>Add Slab</span>
             </button>
           </div>
+          )}
         </div>
 
         {/* ═══════════════════════ MARKETING SECTION ═══════════════════════ */}
