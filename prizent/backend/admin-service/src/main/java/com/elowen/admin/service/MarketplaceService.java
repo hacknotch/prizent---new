@@ -71,6 +71,7 @@ public class MarketplaceService {
         Marketplace marketplace = new Marketplace(clientId, normalizedName, 
             request.getDescription() != null ? request.getDescription().trim() : null,
             request.getEnabled() != null ? request.getEnabled() : true);
+        if (request.getAccNo() != null) marketplace.setAccNo(request.getAccNo().trim());
         marketplace.setUpdatedBy(userId);
         
         Marketplace savedMarketplace = marketplaceRepository.save(marketplace);
@@ -238,6 +239,7 @@ public class MarketplaceService {
                 costRequest.getCostValueType(), costRequest.getCostValue(),
                 costRequest.getCostProductRange().trim()
             );
+            cost.setCategoryId(costRequest.getCategoryId());
             cost.setUpdatedBy(userId);
             costs.add(cost);
         }
@@ -257,6 +259,7 @@ public class MarketplaceService {
                 costRequest.getCostValueType(), costRequest.getCostValue(),
                 costRequest.getCostProductRange().trim()
             );
+            cost.setCategoryId(costRequest.getCategoryId());
             cost.setUpdatedBy(userId);
             costs.add(cost);
         }

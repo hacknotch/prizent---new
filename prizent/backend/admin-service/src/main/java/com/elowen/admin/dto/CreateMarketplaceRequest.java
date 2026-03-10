@@ -21,6 +21,9 @@ public class CreateMarketplaceRequest {
     private String description;
     
     private Boolean enabled = true;
+
+    @Size(max = 100, message = "Account number must not exceed 100 characters")
+    private String accNo;
     
     @Valid
     private List<CostRequest> costs;
@@ -53,6 +56,14 @@ public class CreateMarketplaceRequest {
         this.enabled = enabled;
     }
     
+    public String getAccNo() {
+        return accNo;
+    }
+
+    public void setAccNo(String accNo) {
+        this.accNo = accNo;
+    }
+
     public List<CostRequest> getCosts() {
         return costs;
     }
@@ -76,6 +87,8 @@ public class CreateMarketplaceRequest {
         @NotBlank(message = "Cost product range is required")
         @Size(max = 100, message = "Cost product range must not exceed 100 characters")
         private String costProductRange;
+
+        private Long categoryId;
         
         // Constructors
         public CostRequest() {}
@@ -111,6 +124,14 @@ public class CreateMarketplaceRequest {
         
         public void setCostProductRange(String costProductRange) {
             this.costProductRange = costProductRange;
+        }
+
+        public Long getCategoryId() {
+            return categoryId;
+        }
+
+        public void setCategoryId(Long categoryId) {
+            this.categoryId = categoryId;
         }
     }
 }

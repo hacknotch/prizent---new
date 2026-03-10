@@ -6,7 +6,7 @@ import { getCustomFields, saveCustomFieldValue, CustomFieldResponse } from '../.
 import brandService, { Brand } from '../../services/brandService';
 import categoryService from '../../services/categoryService';
 
-interface BrandSlab { from: string; to: string; value: string; valueType: 'P' | 'A'; }
+interface BrandSlab { from: string; to: string; value: string; valueType: 'P' | 'A'; brandId: string; parentCategoryId: string; categoryId: string; subCategoryId: string; }
 interface WeightSlab { 
   weightFrom: string; 
   weightTo: string; 
@@ -28,9 +28,9 @@ interface CollectionFeeSlab {
 }
 interface PickAndPackSlab {
   brand: string;
-  category: string;
-  subCategory: string;
-  gender: string;
+  parentCategoryId: string;
+  categoryId: string;
+  subCategoryId: string;
   from: string;
   to: string;
   pnpValue: string;
@@ -58,20 +58,15 @@ const AddMarketplacePage: React.FC = () => {
   });
   
   // Cost slabs state
-  const [productCostSlabs, setProductCostSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
-  const [marketingSlabs, setMarketingSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
-  const [shippingSlabs, setShippingSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A' }]);
-  
+  const [productCostSlabs, setProductCostSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A', brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }]);
+  const [marketingSlabs, setMarketingSlabs] = useState([{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A', brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }]);
   // NEW: Weight-based shipping state
   const [weightSlabs, setWeightSlabs] = useState<WeightSlab[]>([{ weightFrom: '0', weightTo: '0', local: '0', zonal: '0', national: '0', value: '0' }]);
   
   // NEW: Simple fee sections
   const [shippingPercentage, setShippingPercentage] = useState({ local: '0', zonal: '0', national: '0' });
   const [fixedFeeSlabs, setFixedFeeSlabs] = useState<FixedFeeSlab[]>([{ aspFrom: '0', aspTo: '0', fee: '0' }]);
-  const [reverseShippingCost, setReverseShippingCost] = useState('0');
-  const [collectionFee, setCollectionFee] = useState({ prepaid: '0', postpaid: '0' });
-  const [royalty, setRoyalty] = useState('0');
-  const [pickAndPack, setPickAndPack] = useState('0');
+
   
   // Flat based values for Shipping, Marketing, Fixed Fee
   const [shippingFlatValue, setShippingFlatValue] = useState('0');
@@ -95,7 +90,7 @@ const AddMarketplacePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [productCostValueType, setProductCostValueType] = useState<'P' | 'A'>('A');
   const [marketingValueType, setMarketingValueType] = useState<'P' | 'A'>('A');
-  const [shippingValueType, setShippingValueType] = useState<'P' | 'A'>('A');
+  const [shippingValueType, setShippingValueType] = useState<'A' | 'P' | 'gt' | 'none'>('A');
   const [customFields, setCustomFields] = useState<CustomFieldResponse[]>([]);
   const [customFieldValues, setCustomFieldValues] = useState<{ [key: number]: string }>({});
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -103,15 +98,14 @@ const AddMarketplacePage: React.FC = () => {
   const [brandMappings, setBrandMappings] = useState<BrandMapping[]>([]);
 
   // NEW: Commission/Marketing filters
-  const [commissionFilters, setCommissionFilters] = useState({ brandId: '', categoryId: '', gender: '', none: false });
-  const [marketingFilters, setMarketingFilters] = useState({ brandId: '', categoryId: '', gender: '', none: false });
-  const [fixedFeeFilters, setFixedFeeFilters] = useState({ brandId: '', categoryId: '', subCategoryId: '', gender: '' });
+  const [commissionFilters, setCommissionFilters] = useState({ brandId: '', categoryId: '', none: false });
+  const [marketingFilters, setMarketingFilters] = useState({ brandId: '', categoryId: '', none: false });
+  const [fixedFeeFilters, setFixedFeeFilters] = useState({ brandId: '', categoryId: '', subCategoryId: '', subSubCategoryId: '' });
   const [fixedFeeValueType, setFixedFeeValueType] = useState<'P' | 'A'>('A');
   const [fixedFeeType, setFixedFeeType] = useState<'flat' | 'gt' | 'none'>('gt');
   
   // Reverse Shipping Cost states
   const [reverseShippingType, setReverseShippingType] = useState<'flat' | 'weight' | 'none'>('weight');
-  const [reverseShippingValues, setReverseShippingValues] = useState({ grossUnitScale: '0', cr: '0', rto: '0', netUnitScale: '0' });
   const [reverseWeightSlabs, setReverseWeightSlabs] = useState<WeightSlab[]>([{ weightFrom: '0', weightTo: '0', local: '0', zonal: '0', national: '0', value: '0' }]);
   const [reverseWeightValueType, setReverseWeightValueType] = useState<'P' | 'A'>('A');
   const [reverseShippingFlatValue, setReverseShippingFlatValue] = useState('0');
@@ -131,7 +125,7 @@ const AddMarketplacePage: React.FC = () => {
   // Pick and Pack states
   const [pickAndPackType, setPickAndPackType] = useState<'slab' | 'none'>('slab');
   const [pickAndPackSlabs, setPickAndPackSlabs] = useState<PickAndPackSlab[]>([
-    { brand: '', category: '', subCategory: '', gender: '', from: '0', to: '0', pnpValue: '0' }
+    { brand: '', parentCategoryId: '', categoryId: '', subCategoryId: '', from: '0', to: '0', pnpValue: '0' }
   ]);
   const [pickAndPackValueType, setPickAndPackValueType] = useState<'P' | 'A'>('A');
 
@@ -146,9 +140,8 @@ const AddMarketplacePage: React.FC = () => {
     setMarketingSlabs(prev => prev.map(slab => ({ ...slab, valueType: newType })));
   };
 
-  const handleShippingValueTypeChange = (newType: 'P' | 'A') => {
+  const handleShippingValueTypeChange = (newType: 'A' | 'P' | 'gt' | 'none') => {
     setShippingValueType(newType);
-    setShippingSlabs(prev => prev.map(slab => ({ ...slab, valueType: newType })));
   };
 
   // Validate numeric input - only allow numbers and decimal point
@@ -201,12 +194,12 @@ const AddMarketplacePage: React.FC = () => {
     setBrandMappings(prev => [...prev, {
       localId: `temp-${Date.now()}`,
       brandId: '',
-      commissionSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' }],
-      marketingSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' }],
-      shippingSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' }],
-      commissionValueType: 'A',
-      marketingValueType: 'A',
-      shippingValueType: 'A',
+      commissionSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A', brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }],
+      marketingSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A', brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }],
+      shippingSlabs: [{ from: '0', to: '0', value: '0', valueType: 'A' as 'P' | 'A', brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }],
+      commissionValueType: 'A' as 'P' | 'A',
+      marketingValueType: 'A' as 'P' | 'A',
+      shippingValueType: 'A' as 'P' | 'A',
     }]);
   };
 
@@ -258,7 +251,7 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const addProductCostSlab = () => {
-    setProductCostSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: productCostValueType }]);
+    setProductCostSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: productCostValueType, brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }]);
   };
 
   const removeProductCostSlab = (index: number) => {
@@ -268,14 +261,19 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const updateProductCostSlab = (index: number, field: string, value: string) => {
-    const validatedValue = field !== 'valueType' ? validateNumericInput(value) : value;
-    setProductCostSlabs(prev => prev.map((slab, i) => 
-      i === index ? { ...slab, [field]: validatedValue } : slab
-    ));
+    const numericFields = ['from', 'to', 'value'];
+    const validatedValue = numericFields.includes(field) ? validateNumericInput(value) : value;
+    setProductCostSlabs(prev => prev.map((slab, i) => {
+      if (i !== index) return slab;
+      // When parent category changes, reset child category
+      if (field === 'parentCategoryId') return { ...slab, parentCategoryId: validatedValue, categoryId: '', subCategoryId: '' };
+      if (field === 'categoryId') return { ...slab, categoryId: validatedValue, subCategoryId: '' };
+      return { ...slab, [field]: validatedValue };
+    }));
   };
 
   const addMarketingSlab = () => {
-    setMarketingSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: marketingValueType }]);
+    setMarketingSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: marketingValueType, brandId: '', parentCategoryId: '', categoryId: '', subCategoryId: '' }]);
   };
 
   const removeMarketingSlab = (index: number) => {
@@ -285,27 +283,14 @@ const AddMarketplacePage: React.FC = () => {
   };
 
   const updateMarketingSlab = (index: number, field: string, value: string) => {
-    const validatedValue = field !== 'valueType' ? validateNumericInput(value) : value;
-    setMarketingSlabs(prev => prev.map((slab, i) => 
-      i === index ? { ...slab, [field]: validatedValue } : slab
-    ));
-  };
-
-  const addShippingSlab = () => {
-    setShippingSlabs(prev => [...prev, { from: '0', to: '0', value: '0', valueType: shippingValueType }]);
-  };
-
-  const removeShippingSlab = (index: number) => {
-    if (shippingSlabs.length > 1) {
-      setShippingSlabs(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateShippingSlab = (index: number, field: string, value: string) => {
-    const validatedValue = field !== 'valueType' ? validateNumericInput(value) : value;
-    setShippingSlabs(prev => prev.map((slab, i) => 
-      i === index ? { ...slab, [field]: validatedValue } : slab
-    ));
+    const numericFields = ['from', 'to', 'value'];
+    const validatedValue = numericFields.includes(field) ? validateNumericInput(value) : value;
+    setMarketingSlabs(prev => prev.map((slab, i) => {
+      if (i !== index) return slab;
+      if (field === 'parentCategoryId') return { ...slab, parentCategoryId: validatedValue, categoryId: '', subCategoryId: '' };
+      if (field === 'categoryId') return { ...slab, categoryId: validatedValue, subCategoryId: '' };
+      return { ...slab, [field]: validatedValue };
+    }));
   };
 
   // ══════════ NEW: Weight-based Shipping Handlers ══════════
@@ -376,7 +361,7 @@ const AddMarketplacePage: React.FC = () => {
 
   // ══════════ Pick and Pack Handlers ══════════
   const addPickAndPackSlab = () => {
-    setPickAndPackSlabs(prev => [...prev, { brand: '', category: '', subCategory: '', gender: '', from: '0', to: '0', pnpValue: '0' }]);
+    setPickAndPackSlabs(prev => [...prev, { brand: '', parentCategoryId: '', categoryId: '', subCategoryId: '', from: '0', to: '0', pnpValue: '0' }]);
   };
 
   const removePickAndPackSlab = (index: number) => {
@@ -389,9 +374,12 @@ const AddMarketplacePage: React.FC = () => {
     const validatedValue = (field === 'from' || field === 'to' || field === 'pnpValue') 
       ? validateNumericInput(value) 
       : value;
-    setPickAndPackSlabs(prev => prev.map((slab, i) => 
-      i === index ? { ...slab, [field]: validatedValue } : slab
-    ));
+    setPickAndPackSlabs(prev => prev.map((slab, i) => {
+      if (i !== index) return slab;
+      if (field === 'parentCategoryId') return { ...slab, parentCategoryId: validatedValue, categoryId: '', subCategoryId: '' };
+      if (field === 'categoryId') return { ...slab, categoryId: validatedValue, subCategoryId: '' };
+      return { ...slab, [field]: validatedValue };
+    }));
   };
 
   const handlePickAndPackValueTypeChange = (newType: 'P' | 'A') => {
@@ -421,9 +409,7 @@ const AddMarketplacePage: React.FC = () => {
     setShippingPercentage(prev => ({ ...prev, [field]: validateNumericInput(value) }));
   };
 
-  const handleCollectionFeeChange = (field: 'prepaid' | 'postpaid', value: string) => {
-    setCollectionFee(prev => ({ ...prev, [field]: validateNumericInput(value) }));
-  };
+
 
   const handleSubmit = async () => {
     try {
@@ -438,18 +424,17 @@ const AddMarketplacePage: React.FC = () => {
       }
 
       // Validate slab ranges
-      const validateSlabs = (slabs: typeof productCostSlabs, name: string): string | null => {
+      const validateSlabs = (slabs: { from: string; to: string; value: string }[], name: string): string | null => {
         for (const slab of slabs) {
-          if (slab.from || slab.to || slab.value) {
-            if (!slab.from || !slab.to || !slab.value) {
-              return `${name}: All fields (From, To, Value) are required for each slab`;
-            }
-            const fromVal = parseFloat(slab.from);
-            const toVal = parseFloat(slab.to);
+          const fromVal = parseFloat(slab.from) || 0;
+          const toVal = parseFloat(slab.to) || 0;
+          const val = parseFloat(slab.value) || 0;
+          // Only validate slabs where the user has actually entered meaningful data
+          if (toVal > 0 || val > 0) {
             if (fromVal >= toVal) {
               return `${name}: "From cost" must be less than "To cost"`;
             }
-            if (parseFloat(slab.value) <= 0) {
+            if (val <= 0) {
               return `${name}: Value must be greater than 0`;
             }
           }
@@ -457,179 +442,150 @@ const AddMarketplacePage: React.FC = () => {
         return null;
       };
 
-      const commissionError = validateSlabs(productCostSlabs, 'Commission');
-      if (commissionError) {
-        setError(commissionError);
-        setLoading(false);
-        return;
+      // Only validate slabs when the section is actually in slab mode
+      if (productCostValueType === 'P') {
+        const commissionError = validateSlabs(productCostSlabs, 'Commission');
+        if (commissionError) {
+          setError(commissionError);
+          setLoading(false);
+          return;
+        }
       }
 
-      const marketingError = validateSlabs(marketingSlabs, 'Marketing');
-      if (marketingError) {
-        setError(marketingError);
-        setLoading(false);
-        return;
+      if (marketingValueType === 'P' && !marketingFilters.none) {
+        const marketingError = validateSlabs(marketingSlabs, 'Marketing');
+        if (marketingError) {
+          setError(marketingError);
+          setLoading(false);
+          return;
+        }
       }
 
-      const shippingError = validateSlabs(shippingSlabs, 'Shipping');
-      if (shippingError) {
-        setError(shippingError);
-        setLoading(false);
-        return;
-      }
+      // Note: shippingSlabs (zombie state) removed from validation; actual shipping uses weightSlabs
       
       // Prepare cost data
       const costs: CreateMarketplaceCostRequest[] = [];
-      
-      // Add product cost slabs
-      productCostSlabs.forEach((slab) => {
-        if (parseFloat(slab.to) > parseFloat(slab.from) && parseFloat(slab.value) > 0) {
-          costs.push({
-            costCategory: 'COMMISSION',
-            costValueType: slab.valueType,
-            costValue: parseFloat(slab.value),
-            costProductRange: `${slab.from}-${slab.to}`
-          });
+
+      // ── Commission ──
+      if (productCostValueType === 'A') {
+        // Flat based commission
+        if (parseFloat(commissionFlatValue) > 0) {
+          costs.push({ costCategory: 'COMMISSION', costValueType: commissionFlatValueType, costValue: parseFloat(commissionFlatValue), costProductRange: 'flat' });
         }
-      });
-      
-      // Add marketing slabs
-      marketingSlabs.forEach((slab) => {
-        if (parseFloat(slab.to) > parseFloat(slab.from) && parseFloat(slab.value) > 0) {
-          costs.push({
-            costCategory: 'MARKETING',
-            costValueType: slab.valueType,
-            costValue: parseFloat(slab.value),
-            costProductRange: `${slab.from}-${slab.to}`
-          });
-        }
-      });
-      
-      // Add shipping slabs
-      shippingSlabs.forEach((slab) => {
-        if (parseFloat(slab.to) > parseFloat(slab.from) && parseFloat(slab.value) > 0) {
-          costs.push({
-            costCategory: 'SHIPPING',
-            costValueType: slab.valueType,
-            costValue: parseFloat(slab.value),
-            costProductRange: `${slab.from}-${slab.to}`
-          });
-        }
-      });
-      
-      // ══════════ NEW: Add weight-based shipping ══════════
-      weightSlabs.forEach((slab) => {
-        if (parseFloat(slab.weightTo) > parseFloat(slab.weightFrom)) {
-          if (parseFloat(slab.local) > 0) {
-            costs.push({
-              costCategory: 'WEIGHT_SHIPPING_LOCAL' as any,
-              costValueType: 'A',
-              costValue: parseFloat(slab.local),
-              costProductRange: `${slab.weightFrom}-${slab.weightTo}kg`
-            });
+      } else {
+        // Slab based commission
+        productCostSlabs.forEach((slab) => {
+          if (parseFloat(slab.to) > parseFloat(slab.from) && parseFloat(slab.value) > 0) {
+            const categoryId = slab.subCategoryId ? parseInt(slab.subCategoryId) : slab.categoryId ? parseInt(slab.categoryId) : slab.parentCategoryId ? parseInt(slab.parentCategoryId) : undefined;
+            const brandPart = slab.brandId ? `brand:${slab.brandId}` : '';
+            const range = brandPart ? `${slab.from}-${slab.to}|${brandPart}` : `${slab.from}-${slab.to}`;
+            costs.push({ costCategory: 'COMMISSION', costValueType: commissionSlabValueType, costValue: parseFloat(slab.value), costProductRange: range, ...(categoryId !== undefined && { categoryId }) });
           }
-          if (parseFloat(slab.zonal) > 0) {
-            costs.push({
-              costCategory: 'WEIGHT_SHIPPING_ZONAL' as any,
-              costValueType: 'A',
-              costValue: parseFloat(slab.zonal),
-              costProductRange: `${slab.weightFrom}-${slab.weightTo}kg`
-            });
-          }
-          if (parseFloat(slab.national) > 0) {
-            costs.push({
-              costCategory: 'WEIGHT_SHIPPING_NATIONAL' as any,
-              costValueType: 'A',
-              costValue: parseFloat(slab.national),
-              costProductRange: `${slab.weightFrom}-${slab.weightTo}kg`
-            });
-          }
-        }
-      });
-
-      // ══════════ NEW: Add shipping percentage ══════════
-      if (parseFloat(shippingPercentage.local) > 0) {
-        costs.push({
-          costCategory: 'SHIPPING_PERCENTAGE_LOCAL' as any,
-          costValueType: 'P',
-          costValue: parseFloat(shippingPercentage.local),
-          costProductRange: 'local'
-        });
-      }
-      if (parseFloat(shippingPercentage.zonal) > 0) {
-        costs.push({
-          costCategory: 'SHIPPING_PERCENTAGE_ZONAL' as any,
-          costValueType: 'P',
-          costValue: parseFloat(shippingPercentage.zonal),
-          costProductRange: 'zonal'
-        });
-      }
-      if (parseFloat(shippingPercentage.national) > 0) {
-        costs.push({
-          costCategory: 'SHIPPING_PERCENTAGE_NATIONAL' as any,
-          costValueType: 'P',
-          costValue: parseFloat(shippingPercentage.national),
-          costProductRange: 'national'
         });
       }
 
-      // ══════════ NEW: Add fixed fee slabs ══════════
-      fixedFeeSlabs.forEach((slab) => {
-        if (parseFloat(slab.aspTo) > parseFloat(slab.aspFrom) && parseFloat(slab.fee) > 0) {
-          costs.push({
-            costCategory: 'FIXED_FEE' as any,
-            costValueType: 'A',
-            costValue: parseFloat(slab.fee),
-            costProductRange: `${slab.aspFrom}-${slab.aspTo}`
+      // ── Marketing ──
+      if (!marketingFilters.none) {
+        if (marketingValueType === 'A') {
+          // Flat based marketing
+          if (parseFloat(marketingFlatValue) > 0) {
+            costs.push({ costCategory: 'MARKETING', costValueType: marketingFlatValueType, costValue: parseFloat(marketingFlatValue), costProductRange: 'flat' });
+          }
+        } else {
+          // Slab based marketing
+          marketingSlabs.forEach((slab) => {
+            if (parseFloat(slab.to) > parseFloat(slab.from) && parseFloat(slab.value) > 0) {
+              const categoryId = slab.subCategoryId ? parseInt(slab.subCategoryId) : slab.categoryId ? parseInt(slab.categoryId) : slab.parentCategoryId ? parseInt(slab.parentCategoryId) : undefined;
+              const brandPart = slab.brandId ? `brand:${slab.brandId}` : '';
+              const range = brandPart ? `${slab.from}-${slab.to}|${brandPart}` : `${slab.from}-${slab.to}`;
+              costs.push({ costCategory: 'MARKETING', costValueType: marketingSlabValueType, costValue: parseFloat(slab.value), costProductRange: range, ...(categoryId !== undefined && { categoryId }) });
+            }
           });
         }
-      });
+      }
 
-      // ══════════ NEW: Add reverse shipping cost ══════════
-      if (parseFloat(reverseShippingCost) > 0) {
-        costs.push({
-          costCategory: 'REVERSE_SHIPPING' as any,
-          costValueType: 'A',
-          costValue: parseFloat(reverseShippingCost),
-          costProductRange: 'flat'
+      // ── Shipping ──
+      if (shippingValueType === 'A') {
+        // Flat based shipping
+        if (parseFloat(shippingFlatValue) > 0) {
+          costs.push({ costCategory: 'SHIPPING', costValueType: shippingFlatValueType, costValue: parseFloat(shippingFlatValue), costProductRange: 'flat' });
+        }
+      } else {
+        // Weight based shipping
+        weightSlabs.forEach((slab) => {
+          if (parseFloat(slab.weightTo) > parseFloat(slab.weightFrom)) {
+            if (parseFloat(slab.local) > 0) costs.push({ costCategory: 'WEIGHT_SHIPPING_LOCAL', costValueType: shippingSlabValueType, costValue: parseFloat(slab.local), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.zonal) > 0) costs.push({ costCategory: 'WEIGHT_SHIPPING_ZONAL', costValueType: shippingSlabValueType, costValue: parseFloat(slab.zonal), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.national) > 0) costs.push({ costCategory: 'WEIGHT_SHIPPING_NATIONAL', costValueType: shippingSlabValueType, costValue: parseFloat(slab.national), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.value) > 0) costs.push({ costCategory: 'WEIGHT_SHIPPING', costValueType: shippingSlabValueType, costValue: parseFloat(slab.value), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+          }
         });
       }
 
-      // ══════════ NEW: Add collection fee ══════════
-      if (parseFloat(collectionFee.prepaid) > 0) {
-        costs.push({
-          costCategory: 'COLLECTION_FEE_PREPAID' as any,
-          costValueType: 'P',
-          costValue: parseFloat(collectionFee.prepaid),
-          costProductRange: 'prepaid'
-        });
-      }
-      if (parseFloat(collectionFee.postpaid) > 0) {
-        costs.push({
-          costCategory: 'COLLECTION_FEE_POSTPAID' as any,
-          costValueType: 'P',
-          costValue: parseFloat(collectionFee.postpaid),
-          costProductRange: 'postpaid'
+      // ── Shipping Percentage ──
+      if (parseFloat(shippingPercentage.local) > 0) costs.push({ costCategory: 'SHIPPING_PERCENTAGE_LOCAL', costValueType: 'P', costValue: parseFloat(shippingPercentage.local), costProductRange: 'local' });
+      if (parseFloat(shippingPercentage.zonal) > 0) costs.push({ costCategory: 'SHIPPING_PERCENTAGE_ZONAL', costValueType: 'P', costValue: parseFloat(shippingPercentage.zonal), costProductRange: 'zonal' });
+      if (parseFloat(shippingPercentage.national) > 0) costs.push({ costCategory: 'SHIPPING_PERCENTAGE_NATIONAL', costValueType: 'P', costValue: parseFloat(shippingPercentage.national), costProductRange: 'national' });
+
+      // ── Fixed Fee ──
+      if (fixedFeeType === 'flat') {
+        if (parseFloat(fixedFeeFlatValue) > 0) {
+          costs.push({ costCategory: 'FIXED_FEE', costValueType: fixedFeeFlatValueType, costValue: parseFloat(fixedFeeFlatValue), costProductRange: 'flat' });
+        }
+      } else if (fixedFeeType === 'gt') {
+        fixedFeeSlabs.forEach((slab) => {
+          if (parseFloat(slab.aspTo) > parseFloat(slab.aspFrom) && parseFloat(slab.fee) > 0) {
+            const categoryId = fixedFeeFilters.subSubCategoryId ? parseInt(fixedFeeFilters.subSubCategoryId)
+              : fixedFeeFilters.subCategoryId ? parseInt(fixedFeeFilters.subCategoryId)
+              : fixedFeeFilters.categoryId ? parseInt(fixedFeeFilters.categoryId)
+              : undefined;
+            const brandPart = fixedFeeFilters.brandId ? `brand:${fixedFeeFilters.brandId}` : '';
+            const range = brandPart ? `${slab.aspFrom}-${slab.aspTo}|${brandPart}` : `${slab.aspFrom}-${slab.aspTo}`;
+            costs.push({ costCategory: 'FIXED_FEE', costValueType: fixedFeeValueType, costValue: parseFloat(slab.fee), costProductRange: range, ...(categoryId !== undefined && { categoryId }) });
+          }
         });
       }
 
-      // ══════════ NEW: Add royalty ══════════
-      if (parseFloat(royalty) > 0) {
-        costs.push({
-          costCategory: 'ROYALTY' as any,
-          costValueType: 'P',
-          costValue: parseFloat(royalty),
-          costProductRange: 'flat'
+      // ── Reverse Shipping ──
+      if (reverseShippingType === 'flat') {
+        if (parseFloat(reverseShippingFlatValue) > 0) {
+          costs.push({ costCategory: 'REVERSE_SHIPPING', costValueType: reverseShippingFlatValueType, costValue: parseFloat(reverseShippingFlatValue), costProductRange: 'flat' });
+        }
+      } else if (reverseShippingType === 'weight') {
+        reverseWeightSlabs.forEach((slab) => {
+          if (parseFloat(slab.weightTo) > parseFloat(slab.weightFrom)) {
+            if (parseFloat(slab.local) > 0) costs.push({ costCategory: 'REVERSE_SHIPPING_LOCAL', costValueType: reverseWeightValueType, costValue: parseFloat(slab.local), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.zonal) > 0) costs.push({ costCategory: 'REVERSE_SHIPPING_ZONAL', costValueType: reverseWeightValueType, costValue: parseFloat(slab.zonal), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.national) > 0) costs.push({ costCategory: 'REVERSE_SHIPPING_NATIONAL', costValueType: reverseWeightValueType, costValue: parseFloat(slab.national), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+            if (parseFloat(slab.value) > 0) costs.push({ costCategory: 'REVERSE_WEIGHT_SHIPPING', costValueType: reverseWeightValueType, costValue: parseFloat(slab.value), costProductRange: `${slab.weightFrom}-${slab.weightTo}kg` });
+          }
         });
       }
 
-      // ══════════ NEW: Add pick and pack ══════════
-      if (parseFloat(pickAndPack) > 0) {
-        costs.push({
-          costCategory: 'PICK_AND_PACK' as any,
-          costValueType: 'A',
-          costValue: parseFloat(pickAndPack),
-          costProductRange: 'flat'
+      // ── Collection Fee ──
+      if (collectionFeeType === 'value') {
+        collectionFeeSlabs.forEach((slab) => {
+          if (parseFloat(slab.orderValueTo) > parseFloat(slab.orderValueFrom)) {
+            if (parseFloat(slab.prepaid) > 0) costs.push({ costCategory: 'COLLECTION_FEE_PREPAID', costValueType: prepaidValueType, costValue: parseFloat(slab.prepaid), costProductRange: `${slab.orderValueFrom}-${slab.orderValueTo}` });
+            if (parseFloat(slab.postpaid) > 0) costs.push({ costCategory: 'COLLECTION_FEE_POSTPAID', costValueType: postpaidValueType, costValue: parseFloat(slab.postpaid), costProductRange: `${slab.orderValueFrom}-${slab.orderValueTo}` });
+          }
+        });
+      }
+
+      // ── Royalty ──
+      if (royaltyType === 'flat' && parseFloat(royaltyValue) > 0) {
+        costs.push({ costCategory: 'ROYALTY', costValueType: royaltyValueType, costValue: parseFloat(royaltyValue), costProductRange: 'flat' });
+      }
+
+      // ── Pick and Pack ──
+      if (pickAndPackType === 'slab') {
+        pickAndPackSlabs.forEach((slab) => {
+          if (parseFloat(slab.pnpValue) > 0) {
+            const categoryId = slab.subCategoryId ? parseInt(slab.subCategoryId) : slab.categoryId ? parseInt(slab.categoryId) : slab.parentCategoryId ? parseInt(slab.parentCategoryId) : undefined;
+            const brandPart = slab.brand ? `brand:${slab.brand}` : '';
+            const range = brandPart ? `${slab.from}-${slab.to}|${brandPart}` : `${slab.from}-${slab.to}`;
+            costs.push({ costCategory: 'PICK_AND_PACK', costValueType: pickAndPackValueType, costValue: parseFloat(slab.pnpValue), costProductRange: range, ...(categoryId !== undefined && { categoryId }) });
+          }
         });
       }
       
@@ -637,6 +593,7 @@ const AddMarketplacePage: React.FC = () => {
         name: formData.name.trim(),
         description: formData.description.trim() || '',
         enabled: formData.enabled,
+        accNo: formData.accNo.trim() || undefined,
         costs
       };
       
@@ -883,14 +840,19 @@ const AddMarketplacePage: React.FC = () => {
           )}
 
           {/* Commission Table */}
-          {productCostValueType === 'P' && (
+          {productCostValueType === 'P' && (() => {
+            const commissionHasSubCat = productCostSlabs.some(s => s.parentCategoryId !== '');
+            const commissionHasSubSubCat = productCostSlabs.some(s => s.categoryId !== '');
+            return (
           <div className="commission-panel">
             {/* Table Header */}
-            <div className="commission-table-header">
+            <div className="commission-table-header" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
               <span className="commission-header-label">Brand</span>
-              <span className="commission-header-label">Category</span>
-              <span className="commission-header-label">Sub Category</span>
-              <span className="commission-header-label">Gender</span>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
+                <span className="commission-header-label" style={{ flex: 1 }}>Category</span>
+                {commissionHasSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+                {commissionHasSubSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+              </div>
               <span className="commission-header-label">From</span>
               <span className="commission-header-label">To</span>
               <span className="commission-header-label">Value</span>
@@ -910,24 +872,35 @@ const AddMarketplacePage: React.FC = () => {
 
             {/* Table Rows */}
             {productCostSlabs.map((slab, i) => (
-              <div key={i} className="commission-table-row">
-                <select className="commission-dropdown" value={commissionFilters.brandId} onChange={e => setCommissionFilters(prev => ({ ...prev, brandId: e.target.value }))}>
-                  <option value="">Ivon</option>
+              <div key={i} className="commission-table-row" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
+                <select className="commission-dropdown" value={slab.brandId} onChange={e => updateProductCostSlab(i, 'brandId', e.target.value)}>
+                  <option value="">All Brands</option>
                   {brands.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
                 </select>
-                <select className="commission-dropdown" value={commissionFilters.categoryId} onChange={e => setCommissionFilters(prev => ({ ...prev, categoryId: e.target.value }))}>
-                  <option value="">Bottom Wear</option>
-                  {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                </select>
-                <select className="commission-dropdown">
-                  <option value="">Jeans</option>
-                </select>
-                <select className="commission-dropdown" value={commissionFilters.gender} onChange={e => setCommissionFilters(prev => ({ ...prev, gender: e.target.value }))}>
-                  <option value="">Female</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="unisex">Unisex</option>
-                </select>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <select className="commission-dropdown" style={{ width: '100%' }} value={slab.parentCategoryId} onChange={e => updateProductCostSlab(i, 'parentCategoryId', e.target.value)}>
+                      <option value="">All Categories</option>
+                      {categories.filter(c => c.parentCategoryId === null).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  {slab.parentCategoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={slab.categoryId} onChange={e => updateProductCostSlab(i, 'categoryId', e.target.value)}>
+                        <option value="">All Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.parentCategoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {slab.categoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={slab.subCategoryId} onChange={e => updateProductCostSlab(i, 'subCategoryId', e.target.value)}>
+                        <option value="">All Sub Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.categoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
                 <input className="commission-input" placeholder="0" value={slab.from} onChange={e => updateProductCostSlab(i, 'from', e.target.value)} />
                 <input className="commission-input" placeholder="0" value={slab.to} onChange={e => updateProductCostSlab(i, 'to', e.target.value)} />
                 <input className="commission-input" placeholder="0" value={slab.value} onChange={e => updateProductCostSlab(i, 'value', e.target.value)} />
@@ -943,7 +916,8 @@ const AddMarketplacePage: React.FC = () => {
               <span>Add Slab</span>
             </button>
           </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* ═══════════════════════ MARKETING SECTION ═══════════════════════ */}
@@ -1020,14 +994,19 @@ const AddMarketplacePage: React.FC = () => {
           )}
 
           {/* Marketing Table */}
-          {marketingValueType === 'P' && !marketingFilters.none && (
+          {marketingValueType === 'P' && !marketingFilters.none && (() => {
+            const marketingHasSubCat = marketingSlabs.some(s => s.parentCategoryId !== '');
+            const marketingHasSubSubCat = marketingSlabs.some(s => s.categoryId !== '');
+            return (
           <div className="commission-panel">
             {/* Table Header */}
-            <div className="commission-table-header">
+            <div className="commission-table-header" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
               <span className="commission-header-label">Brand</span>
-              <span className="commission-header-label">Category</span>
-              <span className="commission-header-label">Sub Category</span>
-              <span className="commission-header-label">Gender</span>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
+                <span className="commission-header-label" style={{ flex: 1 }}>Category</span>
+                {marketingHasSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+                {marketingHasSubSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+              </div>
               <span className="commission-header-label">From</span>
               <span className="commission-header-label">To</span>
               <span className="commission-header-label">Contri</span>
@@ -1047,24 +1026,35 @@ const AddMarketplacePage: React.FC = () => {
 
             {/* Table Rows */}
             {marketingSlabs.map((slab, i) => (
-              <div key={i} className="commission-table-row">
-                <select className="commission-dropdown" value={marketingFilters.brandId} onChange={e => setMarketingFilters(prev => ({ ...prev, brandId: e.target.value }))}>
-                  <option value="">Ivon</option>
+              <div key={i} className="commission-table-row" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
+                <select className="commission-dropdown" value={slab.brandId} onChange={e => updateMarketingSlab(i, 'brandId', e.target.value)}>
+                  <option value="">All Brands</option>
                   {brands.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
                 </select>
-                <select className="commission-dropdown" value={marketingFilters.categoryId} onChange={e => setMarketingFilters(prev => ({ ...prev, categoryId: e.target.value }))}>
-                  <option value="">Bottom Wear</option>
-                  {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                </select>
-                <select className="commission-dropdown">
-                  <option value="">Jeans</option>
-                </select>
-                <select className="commission-dropdown" value={marketingFilters.gender} onChange={e => setMarketingFilters(prev => ({ ...prev, gender: e.target.value }))}>
-                  <option value="">Female</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="unisex">Unisex</option>
-                </select>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <select className="commission-dropdown" style={{ width: '100%' }} value={slab.parentCategoryId} onChange={e => updateMarketingSlab(i, 'parentCategoryId', e.target.value)}>
+                      <option value="">All Categories</option>
+                      {categories.filter(c => c.parentCategoryId === null).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  {slab.parentCategoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={slab.categoryId} onChange={e => updateMarketingSlab(i, 'categoryId', e.target.value)}>
+                        <option value="">All Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.parentCategoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {slab.categoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={slab.subCategoryId} onChange={e => updateMarketingSlab(i, 'subCategoryId', e.target.value)}>
+                        <option value="">All Sub Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.categoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
                 <input className="commission-input" placeholder="0" value={slab.from} onChange={e => updateMarketingSlab(i, 'from', e.target.value)} />
                 <input className="commission-input" placeholder="0" value={slab.to} onChange={e => updateMarketingSlab(i, 'to', e.target.value)} />
                 <input className="commission-input" placeholder="0" value={slab.value} onChange={e => updateMarketingSlab(i, 'value', e.target.value)} />
@@ -1080,7 +1070,8 @@ const AddMarketplacePage: React.FC = () => {
               <span>Add Slab</span>
             </button>
           </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* ═══════════════════════ SHIPPING SECTION ═══════════════════════ */}
@@ -1114,6 +1105,8 @@ const AddMarketplacePage: React.FC = () => {
                 type="radio"
                 name="shippingType"
                 value="gt"
+                checked={shippingValueType === 'gt'}
+                onChange={() => handleShippingValueTypeChange('gt')}
               />
               <span className="commission-radio-label">GT based</span>
             </label>
@@ -1122,6 +1115,8 @@ const AddMarketplacePage: React.FC = () => {
                 type="radio"
                 name="shippingType"
                 value="none"
+                checked={shippingValueType === 'none'}
+                onChange={() => handleShippingValueTypeChange('none')}
               />
               <span className="commission-radio-label">None</span>
             </label>
@@ -1243,7 +1238,7 @@ const AddMarketplacePage: React.FC = () => {
                 value={shippingPercentage.national} 
                 onChange={e => handleShippingPercentageChange('national', e.target.value)} 
               />
-              <button className="commission-delete-btn" type="button">🗑️</button>
+              <button className="commission-delete-btn" type="button" onClick={() => setShippingPercentage({ local: '0', zonal: '0', national: '0' })}>🗑️</button>
             </div>
           </div>
         </div>
@@ -1316,14 +1311,19 @@ const AddMarketplacePage: React.FC = () => {
           )}
 
           {/* Fixed Fee Table */}
-          {fixedFeeType === 'gt' && (
+          {fixedFeeType === 'gt' && (() => {
+            const fixedFeeHasSubCat = fixedFeeFilters.categoryId !== '';
+            const fixedFeeHasSubSubCat = fixedFeeFilters.subCategoryId !== '';
+            return (
           <div className="commission-panel">
             {/* Table Header */}
-            <div className="commission-table-header" style={{ gridTemplateColumns: '1fr 1.2fr 1.2fr 1fr 0.9fr 0.9fr 0.9fr 1fr' }}>
+            <div className="commission-table-header" style={{ gridTemplateColumns: '1fr 3fr 0.9fr 0.9fr 0.9fr 1fr' }}>
               <span className="commission-header-label">Brand</span>
-              <span className="commission-header-label">Category</span>
-              <span className="commission-header-label">Sub Category</span>
-              <span className="commission-header-label">Gender</span>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
+                <span className="commission-header-label" style={{ flex: 1 }}>Category</span>
+                {fixedFeeHasSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+                {fixedFeeHasSubSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+              </div>
               <span className="commission-header-label">ASP From</span>
               <span className="commission-header-label">ASP To</span>
               <span className="commission-header-label">Fixed Fee</span>
@@ -1343,25 +1343,35 @@ const AddMarketplacePage: React.FC = () => {
 
             {/* Table Rows */}
             {fixedFeeSlabs.map((slab, i) => (
-              <div key={i} className="commission-table-row" style={{ gridTemplateColumns: '1fr 1.2fr 1.2fr 1fr 0.9fr 0.9fr 0.9fr 1fr' }}>
+              <div key={i} className="commission-table-row" style={{ gridTemplateColumns: '1fr 3fr 0.9fr 0.9fr 0.9fr 1fr' }}>
                 <select className="commission-dropdown" value={fixedFeeFilters.brandId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, brandId: e.target.value }))}>
-                  <option value="">Ivon</option>
+                  <option value="">All Brands</option>
                   {brands.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
                 </select>
-                <select className="commission-dropdown" value={fixedFeeFilters.categoryId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, categoryId: e.target.value }))}>
-                  <option value="">Bottom Wear</option>
-                  {categories.filter(c => !c.parentId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                </select>
-                <select className="commission-dropdown" value={fixedFeeFilters.subCategoryId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, subCategoryId: e.target.value }))}>
-                  <option value="">Jeans</option>
-                  {categories.filter(c => c.parentId && c.parentId === parseInt(fixedFeeFilters.categoryId || '0')).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                </select>
-                <select className="commission-dropdown" value={fixedFeeFilters.gender} onChange={e => setFixedFeeFilters(prev => ({ ...prev, gender: e.target.value }))}>
-                  <option value="">Female</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="unisex">Unisex</option>
-                </select>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <select className="commission-dropdown" style={{ width: '100%' }} value={fixedFeeFilters.categoryId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, categoryId: e.target.value, subCategoryId: '', subSubCategoryId: '' }))}>
+                      <option value="">All Categories</option>
+                      {categories.filter(c => c.parentCategoryId === null).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  {fixedFeeFilters.categoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={fixedFeeFilters.subCategoryId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, subCategoryId: e.target.value, subSubCategoryId: '' }))}>
+                        <option value="">All Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && c.parentCategoryId === parseInt(fixedFeeFilters.categoryId || '0')).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {fixedFeeFilters.subCategoryId && (
+                    <div style={{ flex: 1 }}>
+                      <select className="commission-dropdown" style={{ width: '100%' }} value={fixedFeeFilters.subSubCategoryId} onChange={e => setFixedFeeFilters(prev => ({ ...prev, subSubCategoryId: e.target.value }))}>
+                        <option value="">All Sub Categories</option>
+                        {categories.filter(c => c.parentCategoryId !== null && c.parentCategoryId === parseInt(fixedFeeFilters.subCategoryId || '0')).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
                 <input className="commission-input" placeholder="500" value={slab.aspFrom} onChange={e => updateFixedFeeSlab(i, 'aspFrom', e.target.value)} />
                 <input className="commission-input" placeholder="500" value={slab.aspTo} onChange={e => updateFixedFeeSlab(i, 'aspTo', e.target.value)} />
                 <input className="commission-input" placeholder="500" value={slab.fee} onChange={e => updateFixedFeeSlab(i, 'fee', e.target.value)} />
@@ -1377,7 +1387,8 @@ const AddMarketplacePage: React.FC = () => {
               <span>Add Slab</span>
             </button>
           </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* ══════════════════ Reverse Shipping Cost Section ══════════════════ */}
@@ -1629,108 +1640,83 @@ const AddMarketplacePage: React.FC = () => {
           </div>
 
           {/* Slab Based Table */}
-          {pickAndPackType === 'slab' && (
-            <div className="pick-and-pack-table-container">
-              <div className="pick-and-pack-table-header">
-                <span>Brand</span>
-                <span>Category</span>
-                <span>Sub Category</span>
-                <span>Gender</span>
-                <span>From</span>
-                <span>To</span>
-                <span>Pnp value</span>
-                <span className="pnp-toggle-header">
-                  <span className="pnp-toggle-label">%</span>
-                  <label className="switch">
-                    <input 
-                      type="checkbox" 
-                      checked={pickAndPackValueType === 'A'}
-                      onChange={() => handlePickAndPackValueTypeChange(pickAndPackValueType === 'P' ? 'A' : 'P')}
-                    />
-                    <span className="slider"></span>
-                  </label>
-                  <span className="pnp-toggle-label">Rs</span>
-                </span>
-                <span></span>
-              </div>
-
-              {pickAndPackSlabs.map((slab, index) => (
-                <div key={index} className="pick-and-pack-table-row">
-                  <select 
-                    value={slab.brand}
-                    onChange={e => updatePickAndPackSlab(index, 'brand', e.target.value)}
-                  >
-                    <option value="">Select Brand</option>
-                    {brands.map(brand => (
-                      <option key={brand.id} value={brand.name}>{brand.name}</option>
-                    ))}
-                  </select>
-
-                  <select 
-                    value={slab.category}
-                    onChange={e => updatePickAndPackSlab(index, 'category', e.target.value)}
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </select>
-
-                  <select 
-                    value={slab.subCategory}
-                    onChange={e => updatePickAndPackSlab(index, 'subCategory', e.target.value)}
-                  >
-                    <option value="">Select Sub Category</option>
-                    <option value="Jeans">Jeans</option>
-                    <option value="T-Shirt">T-Shirt</option>
-                    <option value="Shirt">Shirt</option>
-                  </select>
-
-                  <select 
-                    value={slab.gender}
-                    onChange={e => updatePickAndPackSlab(index, 'gender', e.target.value)}
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Unisex">Unisex</option>
-                  </select>
-
-                  <input 
-                    type="text" 
-                    placeholder="0"
-                    value={slab.from}
-                    onChange={e => updatePickAndPackSlab(index, 'from', e.target.value)}
-                  />
-
-                  <input 
-                    type="text" 
-                    placeholder="0"
-                    value={slab.to}
-                    onChange={e => updatePickAndPackSlab(index, 'to', e.target.value)}
-                  />
-
-                  <input 
-                    type="text" 
-                    placeholder="0"
-                    value={slab.pnpValue}
-                    onChange={e => updatePickAndPackSlab(index, 'pnpValue', e.target.value)}
-                  />
-
-                  <button 
-                    className="delete-icon-btn"
-                    onClick={() => removePickAndPackSlab(index)}
-                  >
-                    🗑️
-                  </button>
+          {pickAndPackType === 'slab' && (() => {
+            const pnpHasSubCat = pickAndPackSlabs.some(s => s.parentCategoryId !== '');
+            const pnpHasSubSubCat = pickAndPackSlabs.some(s => s.categoryId !== '');
+            return (
+              <div className="commission-panel">
+                {/* Table Header */}
+                <div className="commission-table-header" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
+                  <span className="commission-header-label">Brand</span>
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '8px' }}>
+                    <span className="commission-header-label" style={{ flex: 1 }}>Category</span>
+                    {pnpHasSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+                    {pnpHasSubSubCat && <span className="commission-header-label" style={{ flex: 1 }}>Sub-category</span>}
+                  </div>
+                  <span className="commission-header-label">From</span>
+                  <span className="commission-header-label">To</span>
+                  <span className="commission-header-label">Pnp Value</span>
+                  <div className="commission-value-toggle">
+                    <span>%</span>
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={pickAndPackValueType === 'A'}
+                        onChange={e => handlePickAndPackValueTypeChange(e.target.checked ? 'A' : 'P')}
+                      />
+                      <span className="slider" />
+                    </label>
+                    <span>Rs</span>
+                  </div>
                 </div>
-              ))}
 
-              <button className="add-slab-btn" onClick={addPickAndPackSlab}>
-                + Add Slab
-              </button>
-            </div>
-          )}
+                {/* Table Rows */}
+                {pickAndPackSlabs.map((slab, index) => (
+                  <div key={index} className="commission-table-row" style={{ gridTemplateColumns: '1fr 3fr 0.8fr 0.8fr 0.8fr 0.5fr' }}>
+                    <select className="commission-dropdown" value={slab.brand} onChange={e => updatePickAndPackSlab(index, 'brand', e.target.value)}>
+                      <option value="">All Brands</option>
+                      {brands.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
+                    </select>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <select className="commission-dropdown" style={{ width: '100%' }} value={slab.parentCategoryId} onChange={e => updatePickAndPackSlab(index, 'parentCategoryId', e.target.value)}>
+                          <option value="">All Categories</option>
+                          {categories.filter(c => c.parentCategoryId === null).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                        </select>
+                      </div>
+                      {slab.parentCategoryId && (
+                        <div style={{ flex: 1 }}>
+                          <select className="commission-dropdown" style={{ width: '100%' }} value={slab.categoryId} onChange={e => updatePickAndPackSlab(index, 'categoryId', e.target.value)}>
+                            <option value="">All Sub Categories</option>
+                            {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.parentCategoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      {slab.categoryId && (
+                        <div style={{ flex: 1 }}>
+                          <select className="commission-dropdown" style={{ width: '100%' }} value={slab.subCategoryId} onChange={e => updatePickAndPackSlab(index, 'subCategoryId', e.target.value)}>
+                            <option value="">All Sub Categories</option>
+                            {categories.filter(c => c.parentCategoryId !== null && String(c.parentCategoryId) === slab.categoryId).map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    <input className="commission-input" placeholder="0" value={slab.from} onChange={e => updatePickAndPackSlab(index, 'from', e.target.value)} />
+                    <input className="commission-input" placeholder="0" value={slab.to} onChange={e => updatePickAndPackSlab(index, 'to', e.target.value)} />
+                    <input className="commission-input" placeholder="0" value={slab.pnpValue} onChange={e => updatePickAndPackSlab(index, 'pnpValue', e.target.value)} />
+                    {pickAndPackSlabs.length > 1 ? (
+                      <button className="commission-delete-btn" onClick={() => removePickAndPackSlab(index)} type="button">🗑️</button>
+                    ) : <div></div>}
+                  </div>
+                ))}
+
+                <button className="commission-add-slab" onClick={addPickAndPackSlab} type="button">
+                  <span>+</span>
+                  <span>Add Slab</span>
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         <div className="footer-actions">

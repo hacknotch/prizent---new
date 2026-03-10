@@ -15,6 +15,7 @@ public class MarketplaceCostDto {
     private String costValueType;  // P, A
     private Double costValue;
     private String costProductRange;
+    private Long categoryId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -30,4 +31,7 @@ public class MarketplaceCostDto {
 
     public String getCostProductRange() { return costProductRange; }
     public void setCostProductRange(String costProductRange) { this.costProductRange = costProductRange; }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 }

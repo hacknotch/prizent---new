@@ -35,7 +35,7 @@ public class MarketplaceCost {
     private Brand brand;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "cost_category", nullable = false, length = 20)
+    @Column(name = "cost_category", nullable = false, length = 50)
     private MarketplaceCostCategory costCategory;
     
     @Enumerated(EnumType.STRING)
@@ -47,6 +47,9 @@ public class MarketplaceCost {
     
     @Column(name = "cost_product_range", nullable = false, length = 100)
     private String costProductRange;
+
+    @Column(name = "category_id")
+    private Long categoryId;
     
     @Column(nullable = false)
     private Boolean enabled = true;
@@ -162,6 +165,14 @@ public class MarketplaceCost {
     
     public void setCostProductRange(String costProductRange) {
         this.costProductRange = costProductRange;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
     
     public Boolean getEnabled() {

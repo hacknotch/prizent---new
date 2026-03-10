@@ -78,6 +78,8 @@ public class UpdateMarketplaceRequest {
         @NotBlank(message = "Cost product range is required")
         @Size(max = 100, message = "Cost product range must not exceed 100 characters")
         private String costProductRange;
+
+        private Long categoryId;
         
         // Constructors
         public CostRequest() {}
@@ -121,6 +123,14 @@ public class UpdateMarketplaceRequest {
         
         public void setCostProductRange(String costProductRange) {
             this.costProductRange = costProductRange;
+        }
+
+        public Long getCategoryId() {
+            return categoryId;
+        }
+
+        public void setCategoryId(Long categoryId) {
+            this.categoryId = categoryId;
         }
     }
 }

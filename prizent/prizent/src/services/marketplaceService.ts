@@ -6,6 +6,7 @@ export interface Marketplace {
   name: string;
   description: string;
   enabled: boolean;
+  accNo?: string;
   createDateTime: string;
   costs?: MarketplaceCost[];
   brandCostsSummary?: MarketplaceCost[];
@@ -14,45 +15,50 @@ export interface Marketplace {
 
 export interface MarketplaceCost {
   id: number;
-  costCategory: 'COMMISSION' | 'SHIPPING' | 'MARKETING';
+  costCategory: string;
   costValueType: 'P' | 'A'; // Percentage or Amount
   costValue: number;
   costProductRange: string;
   brandId?: number;
   brandName?: string;
+  categoryId?: number;
 }
 
 export interface CreateMarketplaceRequest {
   name: string;
   description: string;
   enabled: boolean;
+  accNo?: string | undefined;
   costs: CreateMarketplaceCostRequest[];
 }
 
 export interface CreateMarketplaceCostRequest {
-  costCategory: 'COMMISSION' | 'SHIPPING' | 'MARKETING';
+  costCategory: string;
   costValueType: 'P' | 'A';
   costValue: number;
   costProductRange: string;
+  categoryId?: number;
 }
 
 export interface UpdateMarketplaceRequest {
   name?: string;
   description?: string;
   enabled?: boolean;
+  accNo?: string;
   costs?: UpdateMarketplaceCostRequest[];
 }
 
 export interface UpdateMarketplaceCostRequest {
   id?: number;
-  costCategory: 'COMMISSION' | 'SHIPPING' | 'MARKETING';
+  costCategory: string;
   costValueType: 'P' | 'A';
   costValue: number;
   costProductRange: string;
+  categoryId?: number;
 }
 
 export interface BrandMappingCostRequest {
-  costCategory: 'COMMISSION' | 'SHIPPING' | 'MARKETING';
+  costCategory: string;
   costValueType: 'P' | 'A';
   costValue: number;
   costProductRange: string;
@@ -65,7 +71,7 @@ export interface BrandMappingRequest {
 
 export interface BrandMappingCost {
   id?: number;
-  costCategory: 'COMMISSION' | 'SHIPPING' | 'MARKETING';
+  costCategory: string;
   costValueType: 'P' | 'A';
   costValue: number;
   costProductRange: string;

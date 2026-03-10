@@ -18,6 +18,9 @@ public class Marketplace {
     
     @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(name = "acc_no", length = 100)
+    private String accNo;
     
     @Column(length = 500)
     private String description;
@@ -80,6 +83,14 @@ public class Marketplace {
     
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getAccNo() {
+        return accNo;
+    }
+
+    public void setAccNo(String accNo) {
+        this.accNo = accNo;
     }
     
     public Boolean getEnabled() {

@@ -14,6 +14,7 @@ public class MarketplaceResponse {
     
     private Long id;
     private String name;
+    private String accNo;
     private String description;
     private Boolean enabled;
     private LocalDateTime createDateTime;
@@ -27,6 +28,7 @@ public class MarketplaceResponse {
     public MarketplaceResponse(Marketplace marketplace) {
         this.id = marketplace.getId();
         this.name = marketplace.getName();
+        this.accNo = marketplace.getAccNo();
         this.description = marketplace.getDescription();
         this.enabled = marketplace.getEnabled();
         this.createDateTime = marketplace.getCreateDateTime();
@@ -53,6 +55,14 @@ public class MarketplaceResponse {
     
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAccNo() {
+        return accNo;
+    }
+
+    public void setAccNo(String accNo) {
+        this.accNo = accNo;
     }
     
     public String getDescription() {
@@ -112,6 +122,7 @@ public class MarketplaceResponse {
         private String costProductRange;
         private Long brandId;
         private String brandName;
+        private Long categoryId;
         
         // Constructors
         public CostResponse() {}
@@ -124,6 +135,7 @@ public class MarketplaceResponse {
             this.costProductRange = cost.getCostProductRange();
             this.brandId = cost.getBrandId();
             this.brandName = cost.getBrandName();
+            this.categoryId = cost.getCategoryId();
         }
         
         // Getters and Setters
@@ -181,6 +193,14 @@ public class MarketplaceResponse {
 
         public void setBrandName(String brandName) {
             this.brandName = brandName;
+        }
+
+        public Long getCategoryId() {
+            return categoryId;
+        }
+
+        public void setCategoryId(Long categoryId) {
+            this.categoryId = categoryId;
         }
     }
 }
