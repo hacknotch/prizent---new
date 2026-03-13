@@ -501,12 +501,12 @@ const AddMarketplacePage: React.FC = () => {
       }
 
       // ── Shipping ──
-      if (shippingValueType === 'A') {
-        // Flat based shipping
+      if (shippingValueType === 'A' || shippingValueType === 'gt') {
+        // Flat/GT based shipping
         if (parseFloat(shippingFlatValue) > 0) {
-          costs.push({ costCategory: 'SHIPPING', costValueType: shippingFlatValueType, costValue: parseFloat(shippingFlatValue), costProductRange: 'flat' });
+          costs.push({ costCategory: 'SHIPPING', costValueType: shippingFlatValueType, costValue: parseFloat(shippingFlatValue), costProductRange: shippingValueType === 'gt' ? 'gt' : 'flat' });
         }
-      } else {
+      } else if (shippingValueType === 'P') {
         // Weight based shipping
         weightSlabs.forEach((slab) => {
           if (parseFloat(slab.weightTo) > parseFloat(slab.weightFrom)) {
@@ -1093,8 +1093,8 @@ const AddMarketplacePage: React.FC = () => {
             </label>
           </div>
 
-          {/* Flat Based Panel */}
-          {shippingValueType === 'A' && (
+          {/* Flat/GT Based Panel */}
+          {(shippingValueType === 'A' || shippingValueType === 'gt') && (
             <div className="royalty-panel">
               <div className="royalty-toggle-wrapper">
                 <span className="royalty-toggle-label">%</span>
